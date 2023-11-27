@@ -1,0 +1,85 @@
+#show dbs
+#use sample_training
+#show collections
+# cls
+#test_db> create collections
+#test_db>> db.createCollection('test_col')
+# drop collections
+# test_db>> db.collection_name.drop()
+# test_db>>db.dropDatabase()
+# command:
+db.help()
+db.test.help()
+db.dropDatabase()
+db.createCollection()
+
+
+#Insert Documents
+>> db.users.insertMany([])
+# find() and findOne()
+>>  db.users.findOne({"status":"active"})
+>>  db.users.findOne({"status":"inactive"},{"name":1,"company":true,"status":1})
+>> db.users.find({"status":"active"})
+>>  db.users.find({"status":"active"},{"name":1,"company":true,"status":1}
+# Comparision Operator
+>>  db.users.find({"likes":{$lt:90}})
+>>db.users.find({"likes":{$gte:90}})
+>>  db.users.find({"status":{$ne:"active"}})
+>> db.users.find({"status":{$in:["inactive","pending"]}})
+
+# Query array of objects
+>>  db.users.find({"address": { $elemMatch: { "country": "Canada" }}}) 
+
+# Logical Operator
+>> db.users.find({$and:[{"status":"active"},{"company":"TCS"}]})
+>> db.users.find({"status":"active","company":"TCS"}) // implicit
+>> db.users.find({$or:[{"status":"active"},{"company":"TCS"}]})
+
+# Element Operator
+>> db.users.find({"device":{$exists:false}})
+
+#Cursor
+>>  db.users.find({"device":{$exists:true}}).count()
+>>  db.users.find({}).count()
+>> db.users.find({}).limit(2)
+>> var cur = db.users.find({"status":"active"})
+>> cur.next()
+
+# Update Documents
+>> db.users.updateOne({"status":"active"},{$set:{"device":"phone"}})
+>> db.users.updateMany({"status":"active"},{$set:{"device":"mobile","fruit":"apple"}})
+
+## Aggregation
+>>  db.users.aggregate( [ { $match: {} }] )
+>>  db.users.aggregate( [ { $match: {"likes":{$gt:50}} }] )
+>>  db.users.aggregate( [ { $match: {"likes":{$gt:50}} },{$project:{"name":1,"company":1,"status":1}}] )
+>>  db.users.aggregate( [ {$match: {"likes":{$gt:50}}},{$sort:{"likes":1}}] )
+>> test2_db> db.users.aggregate( [ {$match: {"likes":{$gt:50}}},{$sort:{"likes":1}},{ $group: { "_id": { "status": "$status" },"group_count":{$count:{}}}}] )
+>>  db.users.aggregate([ { $match: {} }, { $sort: { "likes": -1 } }, { $group: { "_id": { "status": "$status" },"group_count":{$count:{}},"likes":{$max:"$likes"},"name":{$first:"$name"} } },{$sort: { "group_count": 1 }}] )
+
+
+=============Exception==
+======String Operatir:===
+https://www.mongodb.com/docs/v3.2/reference/operator/aggregation-string/
+db.users.aggregate( [ { $project: { "name": { $toLower: "$name" } } }] )
+db.users.aggregate( [ { $project: { "name": { $concat: ["$name",":","$company" ] }} }] )
+$expr expression
+Array Expression:
+$isArray
+$arrayElemAt
+$first
+$last
+$concatArrays
+$map
+$filter
+
+db.users.aggregate( [ { $project: { "address": true, "name": true, "_id": false } }] )
+db.users.aggregate( [ { $project: { "fev_color": true, "_id": false,"is_array_flg":{$isArray:"$fev_color"} } }] )
+db.users.aggregate( [ { $project: { "fev_color": true, "_id": false,"ele_one":{$first:"$fev_color"} } }] )
+db.users.aggregate( [ { $project: { "fev_color": true, "_id": false,"ele_one":{$reverseArray:"$fev_color"} } }] )
+db.users.aggregate( [ { $project: { "fev_color": true, "_id": false,"upper":{$map:{input:"$fev_color",as:"x",in:{$toUpper:"$$x"}}}} }] )
+ 
+ 
+ ==Restore data
+ 
+mongorestore --uri="mongodb+srv://taukir707:khan102030@training-cluster1.pogj6ec.mongodb.net/imported_data101" simplix_data/

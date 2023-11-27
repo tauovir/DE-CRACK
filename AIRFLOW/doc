@@ -1,0 +1,9 @@
+=====Go into Scheduler to test your task===
+docker-compose ps
+docker exec -it workflow-airflow-scheduler-1 /bin/bash
+==Test Task
+airflow tasks test user_procesing create_table 2023-01-01
+Note: Always test your task to make sure it runs
+
+docker exec -it workflow-postgres-1  /bin/bash
+Select * from users2;
