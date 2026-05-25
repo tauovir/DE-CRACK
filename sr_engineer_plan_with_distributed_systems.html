@@ -1,0 +1,391 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.plan{padding:1rem 0}
+.tabs{display:flex;gap:5px;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab{padding:5px 11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-size:12px;font-weight:500;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);transition:all .15s}
+.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary)}
+.tab.new-tab{border-color:#7F77DD;color:#534AB7}
+.tab.new-tab.active{background:#EEEDFE;color:#3C3489}
+.section{display:none}
+.section.active{display:block}
+.phase{margin-bottom:1.25rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.phase-header{padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phase-badge{font-size:11px;font-weight:500;padding:3px 8px;border-radius:var(--border-radius-md);white-space:nowrap}
+.phase-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.phase-time{font-size:12px;color:var(--color-text-secondary);margin-left:auto}
+.topics{padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;background:var(--color-background-primary)}
+.topic{padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary)}
+.topic-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.topic-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.5}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:2px 6px;border-radius:var(--border-radius-md);margin-bottom:5px}
+.tip{margin-top:1rem;padding:12px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.tip strong{color:var(--color-text-primary);font-weight:500}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:8px;margin-top:1rem}
+.res-card{padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.res-label{font-size:10px;font-weight:500;padding:2px 7px;border-radius:var(--border-radius-md);display:inline-block;margin-bottom:6px}
+.res-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.res-desc{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;line-height:1.4}
+.res-link{font-size:12px;color:var(--color-text-info);text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+.res-link:hover{text-decoration:underline}
+.ask-btn{display:inline-block;margin-top:1rem;padding:7px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);font-size:13px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary)}
+.ask-btn:hover{background:var(--color-background-secondary)}
+.new-badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 7px;border-radius:var(--border-radius-md);background:#EEEDFE;color:#3C3489;margin-left:6px;vertical-align:middle}
+.overlap-row{display:flex;gap:6px;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap}
+.overlap-tag{font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--border-radius-md);white-space:nowrap}
+</style>
+
+<h2 class="sr-only">Full Senior Data Engineer prep plan including distributed systems track from Design Gurus</h2>
+
+<div class="plan">
+  <div class="tabs">
+    <button class="tab active" onclick="show('overview',this)">Overview</button>
+    <button class="tab new-tab" onclick="show('distrib',this)">1B · Distributed systems <span class="new-badge">new</span></button>
+    <button class="tab" onclick="show('design',this)">1A · Data design patterns</button>
+    <button class="tab" onclick="show('sql',this)">2 · SQL</button>
+    <button class="tab" onclick="show('python',this)">3 · Python / PySpark</button>
+    <button class="tab" onclick="show('extra',this)">4 · Hidden gaps</button>
+    <button class="tab" onclick="show('interview',this)">5 · Interview strategy</button>
+    <button class="tab" onclick="show('resources',this)">Free resources</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="overview">
+    <div style="margin-bottom:1rem;padding:12px 14px;border-radius:var(--border-radius-md);border:0.5px solid #AFA9EC;background:#EEEDFE">
+      <div style="font-size:13px;font-weight:500;color:#3C3489;margin-bottom:4px">What changed — Track 1B added</div>
+      <div style="font-size:12px;color:#534AB7;line-height:1.6">Design Gurus covers general distributed systems design — CAP theorem, caching, Kafka internals, load balancing, consistency models — which is missing from the original plan but expected at Lead/Architect level. Track 1A (data engineering patterns) and Track 1B (distributed systems) together give you full coverage. Run them in parallel during weeks 1–6.</div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#EAF3DE">
+        <span class="phase-badge" style="background:#C0DD97;color:#27500A">Phase 1</span>
+        <span class="phase-title">Foundations — run 1A & 1B in parallel</span>
+        <span class="phase-time">Weeks 1–6</span>
+      </div>
+      <div class="topics">
+        <div class="topic" style="border-color:#C0DD97">
+          <span class="tag" style="background:#EAF3DE;color:#27500A">Track 1A · Data patterns</span>
+          <div class="topic-name">Data engineering architecture</div>
+          <div class="topic-desc">Medallion, Data Vault 2.0, Lambda/Kappa, Data Mesh, SCD types, Delta Lake patterns. Your existing strength — deepen storytelling.</div>
+        </div>
+        <div class="topic" style="border-color:#AFA9EC">
+          <span class="tag" style="background:#EEEDFE;color:#3C3489">Track 1B · Distributed systems</span>
+          <div class="topic-name">Distributed systems fundamentals</div>
+          <div class="topic-desc">CAP theorem, caching strategies, load balancing, Kafka internals, consistency models, replication, sharding. From Design Gurus — new territory.</div>
+        </div>
+        <div class="topic"><div class="topic-name">Advanced SQL</div><div class="topic-desc">Window functions, CTEs, query plans, partitioning, indexing, Spark SQL optimizer</div></div>
+        <div class="topic"><div class="topic-name">PySpark internals</div><div class="topic-desc">DAG, shuffles, partitioning, AQE, broadcast joins, Structured Streaming</div></div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#E6F1FB">
+        <span class="phase-badge" style="background:#B5D4F4;color:#0C447C">Phase 2</span>
+        <span class="phase-title">Architecture & system design practice</span>
+        <span class="phase-time">Weeks 7–12</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">End-to-end design sessions</div><div class="topic-desc">Design a full lakehouse: Event Hubs → ADLS → Databricks → serving. Then design a real-time fraud pipeline. Both from scratch on paper.</div></div>
+        <div class="topic"><div class="topic-name">Design Gurus mock designs</div><div class="topic-desc">Work through 3–4 case studies: Kafka, distributed messaging, Cassandra, one product design (Uber or Twitter). These build the vocabulary interviewers expect.</div></div>
+        <div class="topic"><div class="topic-name">Trade-off articulation</div><div class="topic-desc">For every design choice practice saying: "I chose X over Y because [criterion]. The trade-off is [downside]." This is the senior signal.</div></div>
+        <div class="topic"><div class="topic-name">Data quality & governance</div><div class="topic-desc">Great Expectations, Unity Catalog lineage, Purview, RBAC design — banks and telcos interview heavily on this</div></div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#FAEEDA">
+        <span class="phase-badge" style="background:#FAC775;color:#633806">Phase 3</span>
+        <span class="phase-title">Interview-ready practice</span>
+        <span class="phase-time">Weeks 13–18</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Timed whiteboard sessions</div><div class="topic-desc">50-min timer, no notes. Clarify → decompose → deep dive → trade-offs. At least 10 full sessions before applying.</div></div>
+        <div class="topic"><div class="topic-name">SQL & Python daily drill</div><div class="topic-desc">DataLemur daily SQL, PySpark challenge weekly. Medium-Hard, timed at 45 min each.</div></div>
+        <div class="topic"><div class="topic-name">8 STAR behavioural stories</div><div class="topic-desc">Migration you led, production incident, architecture decision you drove, junior mentored, stakeholder conflict resolved.</div></div>
+        <div class="topic"><div class="topic-name">Portfolio project on GitHub</div><div class="topic-desc">Event Hubs → Databricks Streaming → Delta Lake → Power BI. Public repo with a clear README explaining design decisions.</div></div>
+      </div>
+    </div>
+    <div class="tip"><strong>Weekly rhythm:</strong> Mon–Wed: 1A or 1B topic deep dive (1 hr each). Thu: 2 SQL problems + 1 PySpark. Fri: Design Gurus reading. Sat: full whiteboard design session. Sun: rest or mock interview. 18 weeks total.</div>
+  </div>
+
+  <!-- DISTRIBUTED SYSTEMS (NEW) -->
+  <div class="section" id="distrib">
+    <div style="margin-bottom:1rem;padding:12px 14px;border-radius:var(--border-radius-md);border:0.5px solid #AFA9EC;background:#EEEDFE">
+      <div style="font-size:13px;font-weight:500;color:#3C3489;margin-bottom:3px">Track 1B — from Design Gurus · what to study and in what order</div>
+      <div style="font-size:12px;color:#534AB7;line-height:1.6">This is the gap your original plan had. These topics come up in Lead/Architect interviews at banks, telcos, and consulting firms. You don't need to go as deep as a software infrastructure engineer — but you need conversational fluency and the ability to apply these concepts to data platform design.</div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#EEEDFE">
+        <span class="phase-badge" style="background:#CECBF6;color:#3C3489">Priority 1</span>
+        <span class="phase-title">Must know — directly relevant to data platform interviews</span>
+      </div>
+      <div class="topics">
+        <div class="topic">
+          <span class="tag" style="background:#FCEBEB;color:#791F1F">Critical gap</span>
+          <div class="topic-name">CAP theorem & consistency models</div>
+          <div class="topic-desc">Strong vs eventual consistency, PACELC, when to choose each. Interviewers ask: "Is your pipeline strongly consistent? What happens if a node fails mid-write?" You must answer this fluently.</div>
+        </div>
+        <div class="topic">
+          <span class="tag" style="background:#FCEBEB;color:#791F1F">Critical gap</span>
+          <div class="topic-name">Caching strategies</div>
+          <div class="topic-desc">Read-through, write-through, write-behind, cache-aside, cache invalidation, TTL. Data architects must know when caching fits into the serving layer and what breaks when it fails.</div>
+        </div>
+        <div class="topic">
+          <span class="tag" style="background:#FCEBEB;color:#791F1F">Critical gap</span>
+          <div class="topic-name">Kafka internals (deep)</div>
+          <div class="topic-desc">Topics, partitions, consumer groups, offset management, delivery semantics (at-least-once, exactly-once), ZooKeeper role. Design Gurus has a full Kafka case study — work through all of it.</div>
+        </div>
+        <div class="topic">
+          <span class="tag" style="background:#FCEBEB;color:#791F1F">Critical gap</span>
+          <div class="topic-name">Batch vs stream processing trade-offs</div>
+          <div class="topic-desc">When Lambda (batch + speed layer) beats Kappa (unified streaming), latency vs throughput, micro-batch vs true streaming. Directly maps to Azure Databricks Structured Streaming decisions.</div>
+        </div>
+        <div class="topic">
+          <span class="tag" style="background:#FAEEDA;color:#633806">Important</span>
+          <div class="topic-name">Database replication & sharding</div>
+          <div class="topic-desc">Primary-replica, peer-to-peer, read replicas, sharding strategies (range, hash, directory). How these map to Databricks cluster design and ADLS partitioning decisions.</div>
+        </div>
+        <div class="topic">
+          <span class="tag" style="background:#FAEEDA;color:#633806">Important</span>
+          <div class="topic-name">Fault tolerance patterns</div>
+          <div class="topic-desc">Heartbeat, leader/follower, quorum, checkpointing. How Spark checkpointing to ADLS maps to these general patterns. Interviewers probe: "What happens if your streaming job fails at exactly this point?"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#F1EFE8">
+        <span class="phase-badge" style="background:#D3D1C7;color:#444441">Priority 2</span>
+        <span class="phase-title">Good to know — for Lead/Architect depth credibility</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Load balancing</div><div class="topic-desc">Algorithms (round-robin, least-connections, weighted), stateful vs stateless. Relevant when designing data API serving layers or multi-cluster Databricks setups.</div></div>
+        <div class="topic"><div class="topic-name">API gateway patterns</div><div class="topic-desc">Rate limiting, authentication, request routing. Comes up when designing data product APIs or exposing Delta Sharing endpoints to consumers.</div></div>
+        <div class="topic"><div class="topic-name">Message queue patterns</div><div class="topic-desc">RabbitMQ vs Kafka vs Azure Service Bus — know the differences and when each fits. Maps to your Azure Event Hubs experience.</div></div>
+        <div class="topic"><div class="topic-name">SQL vs NoSQL trade-offs</div><div class="topic-desc">ACID vs BASE, when to use each. Deepens your existing Snowflake vs MongoDB vs PostgreSQL decision-making story for interview discussions.</div></div>
+        <div class="topic"><div class="topic-name">Consistent hashing</div><div class="topic-desc">How data is distributed across nodes without full reshuffling. Relevant to partitioning strategy discussions in large-scale Databricks clusters.</div></div>
+        <div class="topic"><div class="topic-name">Design Gurus case study: Uber</div><div class="topic-desc">Practice one full product design (Uber or Twitter). Not because you'll design ride-sharing — but because interviewers use product designs to test distributed systems reasoning.</div></div>
+      </div>
+    </div>
+
+    <div class="tip"><strong>How to use Design Gurus for this track:</strong> Their "System Design Fundamentals" and "System Design Trade-offs" sections cover Priority 1. The Kafka case study is the single most valuable thing to read. Budget 3–4 hours/week for 4 weeks on this track running in parallel with Track 1A. Free tier is enough — don't pay until you've exhausted the free content.</div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ask-btn" onclick="sendPrompt('Explain CAP theorem and how it applies to a data pipeline built on Azure Databricks and Delta Lake')">CAP theorem for data pipelines ↗</button>
+      <button class="ask-btn" onclick="sendPrompt('Explain Kafka consumer groups, offset management, and exactly-once semantics as if I am preparing for a Senior Data Engineer interview')">Kafka internals deep dive ↗</button>
+    </div>
+  </div>
+
+  <!-- DATA DESIGN PATTERNS (1A) -->
+  <div class="section" id="design">
+    <div class="phase">
+      <div class="phase-header" style="background:#EAF3DE">
+        <span class="phase-badge" style="background:#C0DD97;color:#27500A">Core</span>
+        <span class="phase-title">Data architecture patterns — must know</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><span class="tag" style="background:#EAF3DE;color:#3B6D11">Your strength</span><div class="topic-name">Medallion / Lakehouse</div><div class="topic-desc">Bronze → Silver → Gold. Deepen: schema evolution, SCD handling, multi-hop pipelines with Delta Live Tables on Azure.</div></div>
+        <div class="topic"><span class="tag" style="background:#EAF3DE;color:#3B6D11">Your strength</span><div class="topic-name">Data Vault 2.0</div><div class="topic-desc">Hub, Link, Satellite. Practice: design a DV model from a business requirement in 20 min on a whiteboard.</div></div>
+        <div class="topic"><span class="tag" style="background:#FAEEDA;color:#633806">Deepen</span><div class="topic-name">Lambda & Kappa</div><div class="topic-desc">Batch + speed layer vs. unified streaming. How Spark Structured Streaming + Event Hubs implements Kappa on Azure. Tie to CAP theorem trade-offs (Track 1B).</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Data Mesh</div><div class="topic-desc">Domain ownership, data products, self-serve platform, federated governance via Unity Catalog. Critical at Lead/Architect level in large Canadian orgs.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Event-driven / EDA</div><div class="topic-desc">Azure Event Hubs, Service Bus, CDC with Debezium. Ties directly into Kafka internals from Track 1B.</div></div>
+        <div class="topic"><span class="tag" style="background:#FAEEDA;color:#633806">Deepen</span><div class="topic-name">SCD Types 1–6</div><div class="topic-desc">Implement SCD Type 2 using MERGE in Delta Lake from memory — interviewers love this specific exercise.</div></div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-header" style="background:#E6F1FB">
+        <span class="phase-badge" style="background:#B5D4F4;color:#0C447C">Platform</span>
+        <span class="phase-title">Pipeline & platform patterns</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Idempotent pipelines</div><div class="topic-desc">MERGE, upsert patterns, deduplication on Delta Lake. Connect to exactly-once delivery semantics (Track 1B Kafka).</div></div>
+        <div class="topic"><div class="topic-name">Schema evolution</div><div class="topic-desc">Delta Lake schema merge, additive vs. breaking changes, contract testing with ADF + Databricks.</div></div>
+        <div class="topic"><div class="topic-name">Data quality framework</div><div class="topic-desc">Great Expectations or Soda Core in pipelines, quarantine patterns, DQ dashboards in Power BI.</div></div>
+        <div class="topic"><div class="topic-name">Observability & lineage</div><div class="topic-desc">Unity Catalog lineage, Azure Monitor, Databricks job alerts, OpenLineage — Lead/Architect must own this story end to end.</div></div>
+      </div>
+    </div>
+    <button class="ask-btn" onclick="sendPrompt('Give me a system design interview question for Senior Data Engineer on Azure and walk me through how to answer it using both data engineering and distributed systems concepts')">Practice a design question ↗</button>
+  </div>
+
+  <!-- SQL -->
+  <div class="section" id="sql">
+    <div class="phase">
+      <div class="phase-header" style="background:#EAF3DE">
+        <span class="phase-badge" style="background:#C0DD97;color:#27500A">Level 1</span>
+        <span class="phase-title">Advanced querying — refresh</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Window functions</div><div class="topic-desc">ROW_NUMBER, RANK, DENSE_RANK, LAG/LEAD, FIRST_VALUE, running totals, moving averages. Must be fluent without looking anything up.</div></div>
+        <div class="topic"><div class="topic-name">CTEs & recursive CTEs</div><div class="topic-desc">WITH clause, chaining CTEs, recursive hierarchies. Practice until it feels natural without syntax hints.</div></div>
+        <div class="topic"><div class="topic-name">Set operations</div><div class="topic-desc">UNION / INTERSECT / EXCEPT, correlated subqueries, EXISTS vs IN performance difference and why.</div></div>
+        <div class="topic"><div class="topic-name">Date & time</div><div class="topic-desc">DATEDIFF, DATEADD, timezone handling, fiscal year calculations. Very common in finance and telco interviews.</div></div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-header" style="background:#E6F1FB">
+        <span class="phase-badge" style="background:#B5D4F4;color:#0C447C">Level 2</span>
+        <span class="phase-title">Performance & architecture</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Query execution plans</div><div class="topic-desc">Read EXPLAIN / EXPLAIN ANALYZE. Spot full scans, nested loops, bad joins. Databricks SQL query profile. Critical for Lead/Architect.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Indexing strategies</div><div class="topic-desc">Delta Z-ordering, liquid clustering, Snowflake clustering keys. Know the Azure/Databricks equivalents of traditional indexes.</div></div>
+        <div class="topic"><div class="topic-name">Partitioning</div><div class="topic-desc">Partition pruning, over-partitioning pitfalls, choosing partition columns on Delta Lake / ADLS Gen2.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Spark SQL specifics</div><div class="topic-desc">Catalyst optimizer, predicate pushdown, broadcast joins, AQE — Databricks tuning knobs you must know at Lead level.</div></div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-header" style="background:#FAEEDA">
+        <span class="phase-badge" style="background:#FAC775;color:#633806">Level 3</span>
+        <span class="phase-title">Data modelling SQL</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">SCD Type 2 in Delta</div><div class="topic-desc">Write SCD Type 2 using MERGE in Delta Lake from memory in under 10 min. Interviewers give you a whiteboard and wait.</div></div>
+        <div class="topic"><div class="topic-name">Deduplication</div><div class="topic-desc">ROW_NUMBER() dedup, late-arriving data handling, idempotent inserts with MERGE on Delta.</div></div>
+        <div class="topic"><div class="topic-name">Aggregation patterns</div><div class="topic-desc">ROLLUP, CUBE, GROUPING SETS — Gold layer report queries. Common in analytics-focused interviews.</div></div>
+      </div>
+    </div>
+    <div class="tip"><strong>Daily practice:</strong> DataLemur (free, data-engineer focused) and StrataScratch (real company questions). Target 5 problems per week minimum.</div>
+    <button class="ask-btn" onclick="sendPrompt('Give me a hard SQL window function challenge a Senior Data Engineer at a Canadian bank would face, then walk me through the solution step by step')">Practice a SQL question ↗</button>
+  </div>
+
+  <!-- PYTHON / PYSPARK -->
+  <div class="section" id="python">
+    <div class="phase">
+      <div class="phase-header" style="background:#EAF3DE">
+        <span class="phase-badge" style="background:#C0DD97;color:#27500A">PySpark</span>
+        <span class="phase-title">PySpark internals & optimization</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><span class="tag" style="background:#FAEEDA;color:#633806">Deepen</span><div class="topic-name">Spark architecture</div><div class="topic-desc">Driver vs executor, DAG stages, shuffles, spill to disk. Explain verbally in an interview without writing code — this is the Lead-level bar.</div></div>
+        <div class="topic"><span class="tag" style="background:#FAEEDA;color:#633806">Deepen</span><div class="topic-name">Partitioning & skew</div><div class="topic-desc">repartition vs coalesce, data skew (salting), optimal partition size (128–200 MB). Tie to distributed systems sharding concepts from Track 1B.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Adaptive Query Execution</div><div class="topic-desc">AQE, dynamic partition coalescing, skew join optimization. Databricks-specific runtime tuning flags.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Structured Streaming</div><div class="topic-desc">Trigger types, checkpointing to ADLS, watermarking, stateful aggregations, exactly-once with Event Hubs. Connects to Kafka delivery semantics from Track 1B.</div></div>
+        <div class="topic"><div class="topic-name">Delta Lake API</div><div class="topic-desc">MERGE, time travel, OPTIMIZE, VACUUM, Z-ORDER, change data feed — write these from memory without docs.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Join strategies</div><div class="topic-desc">Broadcast hash join, sort-merge join, when each triggers. Control with hints. Very common interview topic.</div></div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-header" style="background:#E6F1FB">
+        <span class="phase-badge" style="background:#B5D4F4;color:#0C447C">Python</span>
+        <span class="phase-title">Python engineering quality</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">OOP & design patterns</div><div class="topic-desc">Factory, Strategy, Singleton in pipeline code. Senior roles expect clean, extensible Python — not just notebooks.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Type hints & Pydantic</div><div class="topic-desc">Type annotations, Pydantic for config and data validation. Shows production-grade coding style.</div></div>
+        <div class="topic"><div class="topic-name">Testing</div><div class="topic-desc">Pytest fixtures, mocking Spark sessions, testing Delta writes. Deepen with coverage and CI integration on GitHub Actions.</div></div>
+        <div class="topic"><span class="tag" style="background:#FCEBEB;color:#791F1F">New</span><div class="topic-name">Custom UDFs vs native</div><div class="topic-desc">Why Python UDFs kill performance (serialization cost). Pandas UDFs / Arrow-based UDFs as the production alternative.</div></div>
+      </div>
+    </div>
+    <button class="ask-btn" onclick="sendPrompt('Give me a PySpark optimization challenge for a Senior Data Engineer interview and walk me through the best solution including AQE and join strategy considerations')">Practice a PySpark question ↗</button>
+  </div>
+
+  <!-- HIDDEN GAPS -->
+  <div class="section" id="extra">
+    <div class="phase">
+      <div class="phase-header" style="background:#FBEAF0">
+        <span class="phase-badge" style="background:#F4C0D1;color:#72243E">Gap areas</span>
+        <span class="phase-title">Things most candidates miss at Lead/Architect level</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Data governance & lineage</div><div class="topic-desc">Unity Catalog lineage, Microsoft Purview, PII tagging, RBAC design. Canadian banks and telcos ask about this heavily — compliance is non-negotiable.</div></div>
+        <div class="topic"><div class="topic-name">Azure cost management</div><div class="topic-desc">Databricks DBU optimization, cluster policies, spot instances, ADLS access tiers. Architects own the cloud bill — know the levers.</div></div>
+        <div class="topic"><div class="topic-name">Infrastructure as code</div><div class="topic-desc">Terraform for Azure resources (basic), Databricks Terraform provider. Lead engineers provision infrastructure, not just consume it.</div></div>
+        <div class="topic"><div class="topic-name">GenAI on Databricks</div><div class="topic-desc">Mosaic AI, vector databases, RAG pipelines on Azure. Canadian enterprise clients are actively adding this to data engineering job descriptions right now.</div></div>
+        <div class="topic"><div class="topic-name">Design documents & ADRs</div><div class="topic-desc">Architecture Decision Records, technical writing for stakeholders. At Lead/Architect level this is often the deciding interview factor.</div></div>
+        <div class="topic"><div class="topic-name">Distributed systems vocabulary</div><div class="topic-desc">Being fluent in Track 1B language (idempotency, exactly-once, quorum, consistency boundary) signals architect-level thinking. Interviewers notice immediately when this is missing.</div></div>
+      </div>
+    </div>
+    <div class="tip"><strong>Quick win:</strong> Build one public project — Event Hubs → Databricks Structured Streaming → Delta Lake → Power BI. Write a README that explains your design decisions using distributed systems vocabulary (consistency model chosen, delivery guarantees, failure handling). This differentiates you from most candidates.</div>
+  </div>
+
+  <!-- INTERVIEW STRATEGY -->
+  <div class="section" id="interview">
+    <div class="phase">
+      <div class="phase-header" style="background:#EEEDFE">
+        <span class="phase-badge" style="background:#CECBF6;color:#3C3489">Target</span>
+        <span class="phase-title">Canadian market — where to aim</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Big 5 banks</div><div class="topic-desc">RBC, TD, Scotiabank, BMO, CIBC. Heavy Azure + Databricks. Governance and compliance are top priority. Will test Track 1B concepts (consistency, fault tolerance) heavily.</div></div>
+        <div class="topic"><div class="topic-name">Telcos</div><div class="topic-desc">Bell, Rogers, Telus. Large-scale streaming, real-time pipelines. Will probe Kafka / Event Hubs internals and streaming trade-offs from Track 1B.</div></div>
+        <div class="topic"><div class="topic-name">Consulting firms</div><div class="topic-desc">Accenture, Deloitte, Capgemini, KPMG. Staff big client projects — fastest path into enterprise accounts. Tech Mahindra background is a direct credibility signal.</div></div>
+        <div class="topic"><div class="topic-name">Tech scale-ups</div><div class="topic-desc">Shopify, Wealthsimple, Lightspeed. Move faster, expect strong Python + system design. Both tracks required at senior level here.</div></div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-header" style="background:#E6F1FB">
+        <span class="phase-badge" style="background:#B5D4F4;color:#0C447C">Process</span>
+        <span class="phase-title">Interview rounds to prepare for</span>
+      </div>
+      <div class="topics">
+        <div class="topic"><div class="topic-name">Round 1 · Recruiter screen</div><div class="topic-desc">Elevator pitch: "Sr. Data Engineer specializing in Azure Databricks, PySpark pipelines, and Delta Lake at scale. Currently at Tech Mahindra."</div></div>
+        <div class="topic"><div class="topic-name">Round 2 · Technical coding</div><div class="topic-desc">SQL window functions + PySpark transformation. Practice on a timer — 45 min max. Think out loud the whole time.</div></div>
+        <div class="topic"><div class="topic-name">Round 3 · System design</div><div class="topic-desc">"Design a real-time fraud detection pipeline on Azure." Now you can answer this using BOTH Track 1A (lakehouse patterns) AND Track 1B (consistency model, delivery guarantees, fault tolerance).</div></div>
+        <div class="topic"><div class="topic-name">Round 4 · Behavioural</div><div class="topic-desc">8 STAR stories ready: Unity Catalog migration led, production incident resolved, architecture decision owned, junior mentored, stakeholder conflict navigated.</div></div>
+      </div>
+    </div>
+    <div class="tip"><strong>LinkedIn tip:</strong> Update headline to "Sr. Data Engineer | Azure Databricks | PySpark | Delta Lake | Unity Catalog | Open to Lead/Architect roles in Canada." Add Databricks certifications as Licenses — they show in recruiter filters.</div>
+    <button class="ask-btn" onclick="sendPrompt('Help me write a strong LinkedIn headline and About section for a Senior Data Engineer targeting Lead and Architect roles at Canadian enterprise companies')">Improve my LinkedIn ↗</button>
+  </div>
+
+  <!-- FREE RESOURCES -->
+  <div class="section" id="resources">
+    <div class="phase">
+      <div class="phase-header" style="background:#EEEDFE">
+        <span class="phase-badge" style="background:#CECBF6;color:#3C3489">Track 1B · NEW</span>
+        <span class="phase-title">Distributed systems — free resources</span>
+      </div>
+      <div class="topics" style="grid-template-columns:1fr">
+        <div class="res-grid" style="margin-top:0">
+          <div class="res-card" style="border-color:#AFA9EC"><span class="res-label" style="background:#EEEDFE;color:#3C3489">Design Gurus</span><div class="res-title">System Design Fundamentals (free)</div><div class="res-desc">CAP theorem, caching, load balancing, replication, Kafka — the exact Track 1B topics. Free section is extensive.</div><a class="res-link" href="https://www.designgurus.io/learn-system-design" target="_blank">designgurus.io/learn-system-design <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card" style="border-color:#AFA9EC"><span class="res-label" style="background:#EEEDFE;color:#3C3489">Design Gurus</span><div class="res-title">System Design Trade-offs (free)</div><div class="res-desc">Strong vs eventual consistency, batch vs stream, SQL vs NoSQL — exactly the vocabulary interviewers test at Lead level.</div><a class="res-link" href="https://www.designgurus.io/learn-system-design" target="_blank">designgurus.io — Trade-offs section <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card" style="border-color:#AFA9EC"><span class="res-label" style="background:#EEEDFE;color:#3C3489">YouTube</span><div class="res-title">System Design by Gaurav Sen</div><div class="res-desc">Free deep dives on consistent hashing, Kafka, CAP theorem, caching. Very clear explanations mapped to interview context.</div><a class="res-link" href="https://www.youtube.com/@gkcs" target="_blank">youtube.com/@gkcs <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card" style="border-color:#AFA9EC"><span class="res-label" style="background:#EEEDFE;color:#3C3489">GitHub</span><div class="res-title">System Design Primer</div><div class="res-desc">Free, comprehensive. CAP theorem, consistency patterns, Kafka, caching, load balancing — all in one repo. 270k+ stars.</div><a class="res-link" href="https://github.com/donnemartin/system-design-primer" target="_blank">github.com/donnemartin/system-design-primer <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card" style="border-color:#AFA9EC"><span class="res-label" style="background:#EEEDFE;color:#3C3489">Blog</span><div class="res-title">Martin Kleppmann — DDIA notes</div><div class="res-desc">"Designing Data-Intensive Applications" is the bible for this track. Free chapter summaries and notes are available online.</div><a class="res-link" href="https://dataintensive.net" target="_blank">dataintensive.net <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card" style="border-color:#AFA9EC"><span class="res-label" style="background:#EEEDFE;color:#3C3489">Kafka</span><div class="res-title">Confluent — free Kafka learning</div><div class="res-desc">Free courses on Kafka fundamentals, consumer groups, delivery guarantees. Maps exactly to Event Hubs on Azure.</div><a class="res-link" href="https://developer.confluent.io/learn-kafka/" target="_blank">developer.confluent.io/learn-kafka <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#EAF3DE">
+        <span class="phase-badge" style="background:#C0DD97;color:#27500A">Track 1A</span>
+        <span class="phase-title">Data engineering architecture — free resources</span>
+      </div>
+      <div class="topics" style="grid-template-columns:1fr">
+        <div class="res-grid" style="margin-top:0">
+          <div class="res-card"><span class="res-label" style="background:#EAF3DE;color:#27500A">Databricks docs</span><div class="res-title">Lakehouse & Medallion architecture</div><div class="res-desc">Official guide to Bronze/Silver/Gold, Delta Live Tables, Unity Catalog design</div><a class="res-link" href="https://docs.databricks.com/en/lakehouse/index.html" target="_blank">docs.databricks.com <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#EAF3DE;color:#27500A">Microsoft Learn</span><div class="res-title">Azure Data Engineer learning path</div><div class="res-desc">Free official path covering ADF, ADLS, Databricks — goes toward DP-203 cert</div><a class="res-link" href="https://learn.microsoft.com/en-us/training/roles/data-engineer" target="_blank">learn.microsoft.com <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#EAF3DE;color:#27500A">YouTube</span><div class="res-title">Advancing Analytics — Azure + Databricks</div><div class="res-desc">Deep-dive tutorials on Azure Databricks, Delta Lake, Unity Catalog in real scenarios</div><a class="res-link" href="https://www.youtube.com/@AdvancingAnalytics" target="_blank">youtube.com/@AdvancingAnalytics <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#EAF3DE;color:#27500A">Delta Lake</span><div class="res-title">Delta Lake documentation</div><div class="res-desc">MERGE, time travel, Z-ordering, change data feed — full free reference</div><a class="res-link" href="https://docs.delta.io/latest/index.html" target="_blank">docs.delta.io <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-header" style="background:#E6F1FB">
+        <span class="phase-badge" style="background:#B5D4F4;color:#0C447C">SQL & Python</span>
+        <span class="phase-title">SQL practice & PySpark — free resources</span>
+      </div>
+      <div class="topics" style="grid-template-columns:1fr">
+        <div class="res-grid" style="margin-top:0">
+          <div class="res-card"><span class="res-label" style="background:#E6F1FB;color:#0C447C">SQL Practice</span><div class="res-title">DataLemur</div><div class="res-desc">Free SQL questions from real data engineering interviews at top tech and finance companies</div><a class="res-link" href="https://datalemur.com" target="_blank">datalemur.com <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#E6F1FB;color:#0C447C">SQL Practice</span><div class="res-title">StrataScratch</div><div class="res-desc">Real interview questions from Netflix, Airbnb, Microsoft — free tier has many SQL problems</div><a class="res-link" href="https://www.stratascratch.com" target="_blank">stratascratch.com <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#E6F1FB;color:#0C447C">SQL Reference</span><div class="res-title">Mode SQL Tutorial</div><div class="res-desc">Free interactive SQL covering window functions, subqueries, performance</div><a class="res-link" href="https://mode.com/sql-tutorial" target="_blank">mode.com/sql-tutorial <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#E6F1FB;color:#0C447C">PySpark</span><div class="res-title">Databricks YouTube channel</div><div class="res-desc">Free talks on PySpark optimization, Delta Lake, Structured Streaming from Databricks engineers</div><a class="res-link" href="https://www.youtube.com/@Databricks" target="_blank">youtube.com/@Databricks <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#E6F1FB;color:#0C447C">Community</span><div class="res-title">r/dataengineering</div><div class="res-desc">Interview experiences, study tips, career advice from practitioners</div><a class="res-link" href="https://www.reddit.com/r/dataengineering/" target="_blank">reddit.com/r/dataengineering <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+          <div class="res-card"><span class="res-label" style="background:#E6F1FB;color:#0C447C">Cert prep</span><div class="res-title">Databricks Academy (free tier)</div><div class="res-desc">Free learning paths for Data Engineer Associate and Professional — hands-on notebooks included</div><a class="res-link" href="https://customer-academy.databricks.com" target="_blank">customer-academy.databricks.com <i class="ti ti-external-link" style="font-size:12px" aria-hidden="true"></i></a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
