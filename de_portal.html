@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Engineering System Design Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--bg4:#222230;--border:#2a2a3a;--border2:#3a3a50;--accent:#6c63ff;--accent2:#a78bfa;--accent3:#34d399;--accent4:#f59e0b;--accent5:#f87171;--text:#e2e2f0;--text2:#9090b0;--text3:#5a5a7a;--sidebar-w:260px;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.7;display:flex;min-height:100vh}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--accent2);letter-spacing:-.3px;line-height:1.3}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:3px}
+.search-box{margin:12px 12px 8px;position:relative}
+.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px 8px 32px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+.search-box input:focus{border-color:var(--accent)}
+.search-box::before{content:'⌕';position:absolute;left:10px;top:8px;color:var(--text3);font-size:14px}
+.nav-section{padding:6px 0}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:6px 18px 3px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 18px;cursor:pointer;font-size:12.5px;color:var(--text2);border-left:2px solid transparent;transition:all .15s}
+.nav-item:hover{color:var(--text);background:var(--bg3)}
+.nav-item.active{color:var(--accent2);border-left-color:var(--accent2);background:rgba(108,99,255,.08)}
+.nav-item .dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.nav-item.active .dot{background:var(--accent2)}
+.progress-bar{height:2px;background:var(--border);margin:0 12px 4px;border-radius:2px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent3));border-radius:2px;transition:width .5s}
+.progress-label{font-size:10px;color:var(--text3);padding:0 12px 10px}
+#main{margin-left:var(--sidebar-w);flex:1;overflow-x:hidden}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 32px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+.badge-purple{background:rgba(108,99,255,.2);color:var(--accent2);border:1px solid rgba(108,99,255,.3)}
+.badge-green{background:rgba(52,211,153,.15);color:var(--accent3);border:1px solid rgba(52,211,153,.25)}
+.content{padding:32px;max-width:960px}
+.section{display:none;animation:fadeIn .3s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hero{background:linear-gradient(135deg,rgba(108,99,255,.15) 0%,rgba(52,211,153,.08) 100%);border:1px solid rgba(108,99,255,.3);border-radius:16px;padding:32px;margin-bottom:28px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(108,99,255,.15),transparent 70%)}
+.hero h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:10px;color:var(--text)}
+.hero p{color:var(--text2);font-size:14px;max-width:600px;line-height:1.8}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.hero-pill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);background:var(--bg3)}
+.sec-heading{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin:28px 0 6px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sec-heading .icon{font-size:18px}
+.sec-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:24px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.card-icon{font-size:22px;margin-bottom:10px}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.card-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.card.accent-purple{border-color:rgba(108,99,255,.4)}
+.card.accent-green{border-color:rgba(52,211,153,.3)}
+.card.accent-amber{border-color:rgba(245,158,11,.3)}
+.card.accent-red{border-color:rgba(248,113,113,.3)}
+.info-box{border-radius:var(--radius);padding:16px 18px;margin:14px 0;border-left:3px solid;font-size:13px;line-height:1.7}
+.info-box.tip{background:rgba(52,211,153,.08);border-color:var(--accent3);color:var(--text)}
+.info-box.tip .label{color:var(--accent3);font-weight:600;font-size:11px;text-transform:uppercase;margin-bottom:4px}
+.info-box.warn{background:rgba(245,158,11,.08);border-color:var(--accent4)}
+.info-box.warn .label{color:var(--accent4);font-weight:600;font-size:11px;text-transform:uppercase;margin-bottom:4px}
+.info-box.danger{background:rgba(248,113,113,.08);border-color:var(--accent5)}
+.info-box.danger .label{color:var(--accent5);font-weight:600;font-size:11px;text-transform:uppercase;margin-bottom:4px}
+.info-box.purple{background:rgba(108,99,255,.08);border-color:var(--accent)}
+.info-box.purple .label{color:var(--accent2);font-weight:600;font-size:11px;text-transform:uppercase;margin-bottom:4px}
+.collapsible{margin:10px 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.collapsible-header{padding:13px 16px;background:var(--bg2);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;color:var(--text);transition:background .15s}
+.collapsible-header:hover{background:var(--bg3)}
+.collapsible-header .arrow{color:var(--text3);transition:transform .25s;font-size:12px}
+.collapsible-header.open .arrow{transform:rotate(180deg)}
+.collapsible-body{display:none;padding:16px;background:var(--bg);border-top:1px solid var(--border)}
+.collapsible-body.open{display:block}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tab-btn{padding:9px 18px;background:none;border:none;cursor:pointer;font-size:12.5px;font-family:'Inter',sans-serif;font-weight:500;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;margin-bottom:-1px}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+.tab-btn:hover{color:var(--text)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;margin:12px 0}
+code{font-family:'JetBrains Mono',monospace}
+.kw{color:#c792ea}.str{color:#c3e88d}.cm{color:#546e7a;font-style:italic}.fn{color:#82aaff}.num{color:#f78c6c}.op{color:#89ddff}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12.5px}
+th{background:var(--bg3);padding:10px 14px;text-align:left;font-weight:600;color:var(--text);border-bottom:1px solid var(--border2);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2);color:var(--text)}
+.td-green{color:var(--accent3);font-weight:500}.td-red{color:var(--accent5);font-weight:500}.td-amber{color:var(--accent4);font-weight:500}
+.tradeoff{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.tradeoff-side{background:var(--bg2);border-radius:var(--radius);padding:16px;border:1px solid var(--border)}
+.tradeoff-side h4{font-size:13px;font-weight:600;margin-bottom:10px}
+.tradeoff-side.a h4{color:var(--accent2)}.tradeoff-side.b h4{color:var(--accent3)}
+.tradeoff-side ul{list-style:none}
+.tradeoff-side ul li{font-size:12px;color:var(--text2);padding:4px 0 4px 14px;position:relative}
+.tradeoff-side ul li::before{content:'→';position:absolute;left:0;color:var(--text3)}
+.mermaid-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:14px 0;overflow-x:auto}
+.mermaid{display:flex;justify-content:center}
+.mermaid svg{max-width:100%}
+.quiz-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
+.quiz-q{font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;line-height:1.6}
+.quiz-diff{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;margin-left:8px}
+.quiz-diff.easy{background:rgba(52,211,153,.2);color:var(--accent3)}
+.quiz-diff.med{background:rgba(245,158,11,.2);color:var(--accent4)}
+.quiz-diff.hard{background:rgba(248,113,113,.2);color:var(--accent5)}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.quiz-opt{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;display:flex;align-items:flex-start;gap:10px}
+.quiz-opt:hover{border-color:var(--accent);color:var(--text)}
+.quiz-opt.correct{background:rgba(52,211,153,.12);border-color:var(--accent3);color:var(--accent3)}
+.quiz-opt.wrong{background:rgba(248,113,113,.12);border-color:var(--accent5);color:var(--accent5)}
+.quiz-opt .letter{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;min-width:20px}
+.reveal-btn{background:rgba(108,99,255,.2);border:1px solid rgba(108,99,255,.4);color:var(--accent2);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;transition:background .2s}
+.reveal-btn:hover{background:rgba(108,99,255,.35)}
+.quiz-answer{display:none;margin-top:12px;padding:14px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:8px;font-size:13px;color:var(--text2);line-height:1.7}
+.flashcard-wrap{perspective:1000px;margin:8px 0;cursor:pointer;min-height:160px}
+.flashcard{width:100%;min-height:160px;position:relative;transform-style:preserve-3d;transition:transform .5s;border-radius:12px}
+.flashcard.flipped{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;width:100%;min-height:160px;backface-visibility:hidden;border-radius:12px;padding:24px;display:flex;flex-direction:column;justify-content:center}
+.fc-front{background:var(--bg3);border:1px solid var(--border2)}
+.fc-back{background:rgba(108,99,255,.12);border:1px solid rgba(108,99,255,.3);transform:rotateY(180deg)}
+.fc-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.fc-front .fc-label{color:var(--text3)}.fc-back .fc-label{color:var(--accent2)}
+.fc-content{font-size:14px;color:var(--text);line-height:1.6}
+.fc-hint{font-size:11px;color:var(--text3);margin-top:10px}
+.interview-q{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.iq-header{background:var(--bg3);padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;transition:background .15s}
+.iq-header:hover{background:var(--bg4)}
+.iq-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);line-height:1.4;flex:1}
+.iq-meta{display:flex;gap:6px;margin-top:6px}
+.iq-body{display:none;padding:22px;background:var(--bg);border-top:1px solid var(--border)}
+.iq-body.open{display:block}
+.iq-section{margin-bottom:20px}
+.iq-section h4{font-size:12px;font-weight:600;color:var(--accent4);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.iq-section ul{list-style:none}
+.iq-section ul li{padding:4px 0 4px 16px;position:relative;color:var(--text2);font-size:13px}
+.iq-section ul li::before{content:'▸';position:absolute;left:0;color:var(--accent);font-size:10px;top:6px}
+.mock-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px}
+.mock-q{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.5}
+.mock-timer{font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--accent2);margin:16px 0}
+.mock-timer.warning{color:var(--accent4)}.mock-timer.danger{color:var(--accent5)}
+.mock-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{padding:9px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-primary{background:var(--accent);color:white}.btn-primary:hover{background:#7c73ff}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}.btn-secondary:hover{background:var(--bg4)}
+.btn-danger{background:rgba(248,113,113,.2);color:var(--accent5);border:1px solid rgba(248,113,113,.3)}
+.btn-success{background:rgba(52,211,153,.2);color:var(--accent3);border:1px solid rgba(52,211,153,.3)}
+.scd-table{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:12px 0}
+.scd-table .scd-header{background:var(--bg3);padding:8px 14px;font-size:11px;font-weight:600;color:var(--text3);display:flex;gap:20px}
+.scd-table .scd-row{display:flex;gap:0;border-top:1px solid var(--border)}
+.scd-table .scd-cell{padding:8px 14px;font-size:12px;color:var(--text2);flex:1;font-family:'JetBrains Mono',monospace}
+.scd-table .scd-cell.highlight{color:var(--accent4);background:rgba(245,158,11,.06)}
+.scd-table .scd-cell.new{color:var(--accent3);background:rgba(52,211,153,.06)}
+.scd-table .scd-cell.old{color:var(--accent5);text-decoration:line-through;background:rgba(248,113,113,.05)}
+.est-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:14px 0}
+.est-box h4{font-size:13px;font-weight:600;color:var(--accent2);margin-bottom:12px}
+.est-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.est-row:last-child{border-bottom:none;font-weight:600;color:var(--text)}
+.est-row span:first-child{color:var(--text2)}
+.est-val{color:var(--accent3);font-family:'JetBrains Mono',monospace;font-size:12px}
+.steps{margin:12px 0}
+.step{display:flex;gap:16px;margin-bottom:16px;align-items:flex-start}
+.step-num{background:rgba(108,99,255,.2);color:var(--accent2);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:'Syne',sans-serif}
+.step-content{flex:1}
+.step-title{font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px}
+.step-desc{color:var(--text2);font-size:12.5px;line-height:1.6}
+p{margin-bottom:10px;color:var(--text2);line-height:1.7}
+ul,ol{padding-left:20px;color:var(--text2);font-size:13px}
+li{margin-bottom:4px}
+h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin:18px 0 8px}
+strong{color:var(--text);font-weight:600}
+hr{border:none;border-top:1px solid var(--border);margin:22px 0}
+@media(max-width:768px){#sidebar{transform:translateX(-100%)}#main{margin-left:0}.tradeoff{grid-template-columns:1fr}.content{padding:20px 16px}}
+</style>
+</head>
+<body>
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <h1>⚡ DE System Design<br>Mastery Portal</h1>
+    <p>Azure · Databricks · PySpark · Delta Lake</p>
+  </div>
+  <div class="search-box"><input type="text" id="searchInput" placeholder="Search topics..." oninput="filterNav(this.value)"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">0 of 14 sections visited</div>
+  <div class="nav-section" id="navItems">
+    <div class="nav-label">Core Concepts</div>
+    <div class="nav-item active" onclick="showSection('home')" data-search="home overview"><span class="dot"></span>Home & Overview</div>
+    <div class="nav-item" onclick="showSection('fundamentals')" data-search="fundamentals requirements scalability cap theorem security"><span class="dot"></span>Fundamentals</div>
+    <div class="nav-item" onclick="showSection('batch')" data-search="batch processing incremental full load watermark adf"><span class="dot"></span>Batch Processing</div>
+    <div class="nav-item" onclick="showSection('streaming')" data-search="streaming structured watermark checkpoint exactly once event hubs"><span class="dot"></span>Streaming Processing</div>
+    <div class="nav-label">Data Design</div>
+    <div class="nav-item" onclick="showSection('scd')" data-search="scd slowly changing dimension type 1 2 3 4 6 merge delta"><span class="dot"></span>SCD Types (0–6)</div>
+    <div class="nav-item" onclick="showSection('dq')" data-search="data quality completeness accuracy freshness uniqueness great expectations delta"><span class="dot"></span>Data Quality</div>
+    <div class="nav-item" onclick="showSection('backfill')" data-search="backfill replay historical idempotent partition replaceWhere"><span class="dot"></span>Backfill Strategies</div>
+    <div class="nav-label">Platform</div>
+    <div class="nav-item" onclick="showSection('cluster')" data-search="cluster design autoscale photon spot instance job all purpose sizing"><span class="dot"></span>Cluster Design</div>
+    <div class="nav-item" onclick="showSection('perf')" data-search="performance optimization zorder partition caching AQE broadcast join skew liquid clustering"><span class="dot"></span>Performance Optimization</div>
+    <div class="nav-item" onclick="showSection('estimation')" data-search="estimation storage throughput cost calculation back of envelope"><span class="dot"></span>Estimations</div>
+    <div class="nav-label">Interview Prep</div>
+    <div class="nav-item" onclick="showSection('interview')" data-search="interview system design questions answer lakehouse cdc fraud multi tenant"><span class="dot"></span>10 System Design Qs</div>
+    <div class="nav-item" onclick="showSection('quiz')" data-search="quiz mcq practice test score"><span class="dot"></span>Quiz Practice</div>
+    <div class="nav-item" onclick="showSection('flashcards')" data-search="flashcard concept review flip card"><span class="dot"></span>Flashcards</div>
+    <div class="nav-item" onclick="showSection('mock')" data-search="mock interview timer random question timed"><span class="dot"></span>Mock Interview Mode</div>
+  </div>
+</nav>
+
+<div id="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbarTitle">Home & Overview</span>
+    <div class="topbar-right">
+      <span class="badge badge-purple">Azure + Databricks</span>
+      <span class="badge badge-green">Senior Level</span>
+    </div>
+  </div>
+  <div class="content">
+<!-- HOME -->
+<div id="sec-home" class="section active">
+<div class="hero">
+  <h2>Data Engineering System Design<br>Mastery Portal</h2>
+  <p>Your complete preparation hub for senior-level Data Engineering system design interviews. Azure · Databricks · PySpark · Delta Lake · Unity Catalog · Snowflake · ADF · Event Hubs.</p>
+  <div class="hero-pills">
+    <span class="hero-pill">🏗️ Lakehouse Architecture</span><span class="hero-pill">⚡ Structured Streaming</span><span class="hero-pill">🔵 Azure Databricks</span><span class="hero-pill">🗄️ Delta Lake</span><span class="hero-pill">❄️ Snowflake</span><span class="hero-pill">🔄 CDC Pipelines</span><span class="hero-pill">📊 Unity Catalog</span><span class="hero-pill">🎙️ 10 Interview Qs</span>
+  </div>
+</div>
+<div class="sec-heading"><span class="icon">🗺️</span>Platform Architecture Overview</div>
+<div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[APIs / DBs / CDC] --> B[Azure Event Hubs]
+  A --> C[Azure Data Factory]
+  D[IoT / Logs / Files] --> B
+  B --> E[Bronze — Raw]
+  C --> E
+  E --> F[Silver — Cleaned]
+  F --> G[Gold — Aggregated]
+  G --> H[Snowflake / Synapse]
+  G --> I[Power BI / Tableau]
+  G --> J[ML Feature Store]
+  style E fill:#1a1a2e,stroke:#6c63ff,color:#a78bfa
+  style F fill:#1a1a2e,stroke:#34d399,color:#34d399
+  style G fill:#1a1a2e,stroke:#f59e0b,color:#f59e0b
+</div></div>
+<div class="cards">
+  <div class="card accent-purple"><div class="card-icon">📐</div><div class="card-title">System Design Framework</div><div class="card-desc">Requirements, capacity estimation, architecture decisions, trade-offs, failure scenarios — the complete framework.</div></div>
+  <div class="card accent-green"><div class="card-icon">🌊</div><div class="card-title">Batch & Streaming</div><div class="card-desc">End-to-end pipeline patterns, Structured Streaming, watermarking, exactly-once, backfill strategies.</div></div>
+  <div class="card accent-amber"><div class="card-icon">🔄</div><div class="card-title">SCD Types 0–6</div><div class="card-desc">All 6 SCD types with Databricks implementations, visual examples, pros/cons, and interview tips.</div></div>
+  <div class="card accent-red"><div class="card-icon">✅</div><div class="card-title">Data Quality & Governance</div><div class="card-desc">Completeness, accuracy, freshness checks. Great Expectations, Delta constraints, Unity Catalog.</div></div>
+  <div class="card"><div class="card-icon">⚙️</div><div class="card-title">Cluster & Performance</div><div class="card-desc">Cluster sizing, Photon, Z-ordering, Liquid Clustering, AQE, broadcast joins, skew handling.</div></div>
+  <div class="card"><div class="card-icon">🎙️</div><div class="card-title">10 Real Interview Questions</div><div class="card-desc">Full answers: architecture, components, trade-offs, bottlenecks, monitoring, spoken scripts.</div></div>
+</div>
+<div class="sec-heading"><span class="icon">📋</span>18-Week Study Roadmap</div>
+<div class="steps">
+  <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Weeks 1–4: Fundamentals</div><div class="step-desc">Non-functional requirements, CAP theorem, consistency models, estimation. The vocabulary of every design answer.</div></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Weeks 5–8: Batch & Streaming</div><div class="step-desc">Spark internals, Delta Lake MERGE, SCD types, exactly-once semantics, backfill patterns.</div></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Weeks 9–12: Platform & Performance</div><div class="step-desc">Cluster design, Z-ordering, AQE, data quality frameworks, Unity Catalog governance.</div></div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Weeks 13–18: Interview Practice</div><div class="step-desc">Work through all 10 system design questions, quizzes, flashcards, timed mock interviews.</div></div></div>
+</div>
+<div class="info-box tip"><div class="label">💡 Golden Rule</div>Always start any system design answer by asking clarifying questions: scale, latency SLA, consistency requirements, budget, and downstream consumers. Interviewers explicitly score this behavior. Never jump straight to architecture.</div>
+</div>
+
+<!-- FUNDAMENTALS -->
+<div id="sec-fundamentals" class="section">
+<div class="sec-heading"><span class="icon">📐</span>Fundamentals</div>
+<p class="sec-sub">The foundation of every system design answer. Master these before tackling specific questions.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'tab-req')">Requirements</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-nfr')">Non-Functional</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-cap')">CAP Theorem</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-sec')">Security & Gov</button>
+</div>
+<div id="tab-req" class="tab-panel active">
+  <h3>Functional Requirements — What the system must DO</h3>
+  <div class="info-box purple"><div class="label">Interview Framework</div>Before drawing any box, spend 3–5 minutes asking clarifying questions. Interviewers explicitly score this — it shows architect-level thinking.</div>
+  <h3>Clarifying Questions to Always Ask</h3>
+  <ul>
+    <li><strong>Data volume:</strong> How many records/events per day? Peak vs average?</li>
+    <li><strong>Latency SLA:</strong> Real-time (&lt;1s), near-real-time (1–60s), or batch (hours)?</li>
+    <li><strong>Sources:</strong> How many upstream systems? Push or pull model?</li>
+    <li><strong>Consumers:</strong> Who reads the data? BI, ML, APIs? Their SLAs?</li>
+    <li><strong>Data retention:</strong> Hot/warm/cold data strategy? How long?</li>
+    <li><strong>Consistency:</strong> Strong consistency required or eventual acceptable?</li>
+    <li><strong>Compliance:</strong> GDPR, HIPAA, PCI-DSS requirements?</li>
+    <li><strong>Budget:</strong> Cost-sensitive or performance-first trade-off?</li>
+  </ul>
+</div>
+<div id="tab-nfr" class="tab-panel">
+  <h3>Non-Functional Requirements</h3>
+  <table>
+    <tr><th>Property</th><th>Target</th><th>Azure/Databricks Solution</th></tr>
+    <tr><td><strong>Scalability</strong></td><td class="td-green">Horizontal scale with data volume</td><td>Databricks auto-scaling, ADLS Gen2 (unlimited)</td></tr>
+    <tr><td><strong>Availability</strong></td><td class="td-green">99.9%+ for critical pipelines</td><td>Multi-region ADLS, Databricks HA job clusters</td></tr>
+    <tr><td><strong>Reliability</strong></td><td class="td-green">Zero data loss, idempotent writes</td><td>Delta Lake ACID transactions, checkpointing</td></tr>
+    <tr><td><strong>Latency</strong></td><td class="td-amber">Depends on SLA (ms to hours)</td><td>Structured Streaming trigger intervals</td></tr>
+    <tr><td><strong>Throughput</strong></td><td class="td-green">Scale with cluster size</td><td>PySpark parallelism, Event Hubs partitions</td></tr>
+    <tr><td><strong>Fault Tolerance</strong></td><td class="td-green">Retry, replay, checkpointing</td><td>Delta Lake WAL, Spark checkpoints to ADLS</td></tr>
+    <tr><td><strong>Cost</strong></td><td class="td-amber">Optimize DBU usage</td><td>Spot instances, cluster policies, auto-terminate</td></tr>
+    <tr><td><strong>Security</strong></td><td class="td-red">Encryption, RBAC, audit</td><td>Unity Catalog, Key Vault, Private Link</td></tr>
+  </table>
+</div>
+<div id="tab-cap" class="tab-panel">
+  <h3>CAP Theorem in Data Engineering</h3>
+  <p>In any distributed system, you can only guarantee 2 of 3: Consistency, Availability, Partition Tolerance. In data engineering, partition tolerance is given — so choose C or A.</p>
+  <div class="tradeoff">
+    <div class="tradeoff-side a"><h4>Consistency Priority (CP)</h4><ul><li>Delta Lake ACID transactions</li><li>Strong read-after-write guarantees</li><li>Use for financial, audit pipelines</li><li>May sacrifice write throughput</li><li>Snapshot isolation by default</li></ul></div>
+    <div class="tradeoff-side b"><h4>Availability Priority (AP)</h4><ul><li>Eventual consistency acceptable</li><li>Higher write throughput</li><li>Use for analytics, reporting layers</li><li>Stale reads acceptable for dashboards</li><li>Kafka at-least-once delivery</li></ul></div>
+  </div>
+  <div class="info-box tip"><div class="label">Interview Answer</div>"Delta Lake gives us CP using optimistic concurrency control. For our streaming pipeline, we accept eventual consistency at Event Hubs but ensure exactly-once semantics by the time data reaches Delta via idempotent MERGE. The Gold layer reporting tables can tolerate eventual consistency since BI queries don't require the latest 30-second window."</div>
+</div>
+<div id="tab-sec" class="tab-panel">
+  <h3>Security & Data Governance</h3>
+  <div class="cards">
+    <div class="card"><div class="card-icon">🔐</div><div class="card-title">Unity Catalog</div><div class="card-desc">Column-level security, row-level filters, data lineage, audit logs, cross-workspace access. Centralized governance — three-tier: Catalog → Schema → Table.</div></div>
+    <div class="card"><div class="card-icon">🗝️</div><div class="card-title">Azure Key Vault</div><div class="card-desc">Secrets management for storage credentials, connection strings, API keys. Never hardcode secrets in notebooks. Reference via Databricks secret scopes.</div></div>
+    <div class="card"><div class="card-icon">🛡️</div><div class="card-title">Managed Identity</div><div class="card-desc">Service-to-service auth without credentials. Databricks → ADLS using Managed Identity avoids key rotation overhead and eliminates credential exposure.</div></div>
+    <div class="card"><div class="card-icon">🔍</div><div class="card-title">Audit & Lineage</div><div class="card-desc">Unity Catalog system tables track all data access, queries, permission changes. OpenLineage for cross-platform lineage. Critical for GDPR compliance.</div></div>
+  </div>
+</div>
+</div>
+
+<!-- BATCH PROCESSING -->
+<div id="sec-batch" class="section">
+<div class="sec-heading"><span class="icon">⏱️</span>Batch Processing</div>
+<p class="sec-sub">Patterns for reliable, scalable batch data pipelines on Azure Databricks.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'tab-batch-p')">Patterns</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-batch-i')">Incremental Load</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-batch-t')">Tradeoffs</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-batch-r')">Failure Recovery</button>
+</div>
+<div id="tab-batch-p" class="tab-panel active">
+  <div class="mermaid-wrap"><div class="mermaid">
+graph TD
+  A[Source] --> B[ADF Trigger]
+  B --> C{Load Type?}
+  C -->|Full Load| D[Truncate + Load]
+  C -->|Incremental| E[Watermark / CDC]
+  D --> F[Bronze Delta]
+  E --> F
+  F --> G[PySpark Transforms]
+  G --> H[MERGE into Silver]
+  H --> I[Aggregate Gold]
+  I --> J[Snowflake / Power BI]
+  style F fill:#1a1a2e,stroke:#6c63ff,color:#a78bfa
+  style H fill:#1a1a2e,stroke:#34d399,color:#34d399
+  style I fill:#1a1a2e,stroke:#f59e0b,color:#f59e0b
+  </div></div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapse(this)">Full Load Pattern <span class="arrow">▼</span></div>
+  <div class="collapsible-body"><p><strong>When to use:</strong> Small lookup/reference tables, no reliable change tracking, table &lt;10 GB.</p>
+<pre><span class="cm"># Full load — truncate and replace atomically</span>
+df = spark.read.format(<span class="str">"jdbc"</span>).options(**jdbc_opts).load()
+df.write.format(<span class="str">"delta"</span>) \
+  .mode(<span class="str">"overwrite"</span>) \
+  .option(<span class="str">"overwriteSchema"</span>, <span class="str">"true"</span>) \
+  .saveAsTable(<span class="str">"catalog.bronze.customers"</span>)</pre>
+<div class="info-box warn"><div class="label">Trade-off</div>Full loads are simple but expensive for large tables. Use only when incremental tracking is unreliable.</div></div></div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapse(this)">Incremental Load with Watermark <span class="arrow">▼</span></div>
+  <div class="collapsible-body">
+<pre><span class="cm"># Read last watermark from control table</span>
+last_wm = spark.sql(<span class="str">"SELECT MAX(wm) FROM control.watermarks WHERE tbl='orders'"</span>).collect()[<span class="num">0</span>][<span class="num">0</span>]
+df_new = spark.read.format(<span class="str">"jdbc"</span>) \
+  .option(<span class="str">"query"</span>, <span class="fn">f</span><span class="str">"SELECT * FROM orders WHERE updated_at > '{last_wm}'"</span>).load()
+<span class="cm"># Upsert to Silver</span>
+DeltaTable.forName(spark, <span class="str">"catalog.silver.orders"</span>).alias(<span class="str">"t"</span>) \
+  .merge(df_new.alias(<span class="str">"s"</span>), <span class="str">"t.order_id = s.order_id"</span>) \
+  .whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+<span class="cm"># Advance watermark</span>
+spark.sql(<span class="str">"UPDATE control.watermarks SET wm = now() WHERE tbl='orders'"</span>)</pre></div></div>
+  <div class="collapsible"><div class="collapsible-header" onclick="toggleCollapse(this)">Auto Loader — Best for ADLS File Ingestion <span class="arrow">▼</span></div>
+  <div class="collapsible-body">
+<pre><span class="cm"># Auto Loader — exactly-once file tracking, schema inference</span>
+df = spark.readStream.format(<span class="str">"cloudFiles"</span>) \
+  .option(<span class="str">"cloudFiles.format"</span>, <span class="str">"json"</span>) \
+  .option(<span class="str">"cloudFiles.schemaLocation"</span>, <span class="str">"/mnt/schema/orders"</span>) \
+  .load(<span class="str">"abfss://raw@storage.dfs.core.windows.net/orders/"</span>)
+df.writeStream.format(<span class="str">"delta"</span>) \
+  .option(<span class="str">"checkpointLocation"</span>, <span class="str">"/mnt/checkpoints/orders"</span>) \
+  .trigger(availableNow=<span class="kw">True</span>) \  <span class="cm"># batch mode for backfill</span>
+  .toTable(<span class="str">"catalog.bronze.orders"</span>)</pre></div></div>
+</div>
+<div id="tab-batch-i" class="tab-panel">
+  <table>
+    <tr><th>Strategy</th><th>Mechanism</th><th>Pros</th><th>Cons</th><th>Use When</th></tr>
+    <tr><td>Watermark</td><td>updated_at timestamp</td><td class="td-green">Simple, low overhead</td><td class="td-red">Needs reliable timestamp</td><td>Source has updated_at col</td></tr>
+    <tr><td>CDC (Log-based)</td><td>DB transaction logs</td><td class="td-green">Captures deletes, exact changes</td><td class="td-red">Requires DB permissions</td><td>Need deletes, high accuracy</td></tr>
+    <tr><td>Auto Loader</td><td>ADLS file events</td><td class="td-green">Exactly-once file processing</td><td class="td-red">File-based only</td><td>File drops to ADLS</td></tr>
+    <tr><td>Change Data Feed</td><td>Delta CDF</td><td class="td-green">Native Delta, low latency</td><td class="td-amber">Delta source only</td><td>Delta-to-Delta pipelines</td></tr>
+    <tr><td>Snapshot Diff</td><td>Compare two snapshots</td><td class="td-green">Works on any source</td><td class="td-red">Expensive for large tables</td><td>No change tracking available</td></tr>
+  </table>
+</div>
+<div id="tab-batch-t" class="tab-panel">
+  <div class="tradeoff">
+    <div class="tradeoff-side a"><h4>ADF for Orchestration</h4><ul><li>Visual pipeline builder, low-code</li><li>90+ built-in connectors</li><li>Monitoring dashboard built-in</li><li>Less flexible for complex logic</li><li>Good for data movement tasks</li></ul></div>
+    <div class="tradeoff-side b"><h4>Databricks Workflows</h4><ul><li>Code-first, Python/SQL native</li><li>Better for transform logic</li><li>DAB for CI/CD deployment</li><li>Retry only failed tasks</li><li>Better for data engineering teams</li></ul></div>
+  </div>
+  <div class="tradeoff">
+    <div class="tradeoff-side a"><h4>Single Large Job</h4><ul><li>Simpler orchestration</li><li>Less scheduling overhead</li><li>Harder to debug partial failures</li><li>Full re-run on any failure</li></ul></div>
+    <div class="tradeoff-side b"><h4>Modular Pipeline Tasks</h4><ul><li>Retry only failed task</li><li>Parallel task execution</li><li>Easier testing per module</li><li>More complex dependency graph</li></ul></div>
+  </div>
+</div>
+<div id="tab-batch-r" class="tab-panel">
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Idempotent Writes</div><div class="step-desc">Always use MERGE or INSERT OVERWRITE PARTITION so re-runs don't create duplicates. Never use append mode for processed data.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Control Table Pattern</div><div class="step-desc">Track pipeline state: last_run_start, last_successful_wm, status. On failure, restart from last successful watermark.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Dead Letter / Quarantine</div><div class="step-desc">Route bad records to quarantine Delta table. Process good records, alert on quarantine growth, reprocess after fix.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Delta Time Travel for Rollback</div><div class="step-desc">If a bad write gets through, use RESTORE TABLE to roll back. Delta retains 30 days of history by default.</div></div></div>
+  </div>
+<pre><span class="cm"># Restore Delta table to previous version after bad write</span>
+spark.sql(<span class="str">"RESTORE TABLE catalog.silver.orders TO VERSION AS OF 42"</span>)
+<span class="cm"># Or by timestamp</span>
+spark.sql(<span class="str">"RESTORE TABLE catalog.silver.orders TO TIMESTAMP AS OF '2024-01-15'"</span>)</pre>
+</div>
+</div>
+
+<!-- STREAMING -->
+<div id="sec-streaming" class="section">
+<div class="sec-heading"><span class="icon">🌊</span>Streaming Processing</div>
+<p class="sec-sub">Spark Structured Streaming on Azure Databricks — from basics to production patterns.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'tab-str-a')">Architecture</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-str-w')">Watermarking</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-str-e')">Exactly-Once</button>
+  <button class="tab-btn" onclick="switchTab(this,'tab-str-t')">Micro-batch vs Continuous</button>
+</div>
+<div id="tab-str-a" class="tab-panel active">
+<div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[Event Hubs / Kafka] --> B[Structured Streaming]
+  B --> C[Parse + Validate]
+  C --> D{Error?}
+  D -->|Bad Record| E[Dead Letter Table]
+  D -->|Good| F[Watermark + Window]
+  F --> G[foreachBatch MERGE]
+  G --> H[Silver Delta]
+  H --> I[DLT Gold]
+  I --> J[Snowflake / Power BI]
+</div></div>
+<pre><span class="cm"># Production streaming job — Event Hubs → Delta Silver</span>
+<span class="kw">from</span> pyspark.sql <span class="kw">import</span> functions <span class="kw">as</span> F
+df_raw = spark.readStream.format(<span class="str">"eventhubs"</span>).options(**eh_conf).load()
+df_parsed = df_raw.select(F.from_json(F.col(<span class="str">"body"</span>).cast(<span class="str">"string"</span>), schema).alias(<span class="str">"d"</span>), <span class="str">"enqueuedTime"</span>).select(<span class="str">"d.*"</span>, <span class="str">"enqueuedTime"</span>)
+df_wm = df_parsed.withWatermark(<span class="str">"event_time"</span>, <span class="str">"10 minutes"</span>)
+df_wm.writeStream.format(<span class="str">"delta"</span>) \
+  .option(<span class="str">"checkpointLocation"</span>, <span class="str">"/mnt/checkpoints/events"</span>) \
+  .trigger(processingTime=<span class="str">"30 seconds"</span>) \
+  .toTable(<span class="str">"catalog.silver.events"</span>)</pre>
+</div>
+<div id="tab-str-w" class="tab-panel">
+  <div class="info-box purple"><div class="label">Core Concept</div>Watermark = max(event_time_seen) - watermark_duration. Any event arriving after this threshold is considered late and dropped (or handled separately). Enables Spark to safely free state memory.</div>
+  <table>
+    <tr><th>Source Type</th><th>Watermark Duration</th><th>Rationale</th></tr>
+    <tr><td>IoT sensors (reliable network)</td><td>2–5 minutes</td><td>Low latency, tight SLA</td></tr>
+    <tr><td>Mobile app events</td><td>15–30 minutes</td><td>Offline batching, intermittent connectivity</td></tr>
+    <tr><td>Log aggregation agents</td><td>1–2 hours</td><td>Agents may buffer and retry</td></tr>
+    <tr><td>Financial transactions</td><td>24 hours</td><td>End-of-day reconciliation window</td></tr>
+  </table>
+  <div class="tradeoff">
+    <div class="tradeoff-side a"><h4>Short Watermark</h4><ul><li>Less state memory usage</li><li>State expires sooner</li><li>Risk of dropping late events</li><li>Good for real-time dashboards</li></ul></div>
+    <div class="tradeoff-side b"><h4>Long Watermark</h4><ul><li>Higher memory (state store)</li><li>Tolerates more late-arriving data</li><li>Higher latency to close windows</li><li>Good for accuracy-critical pipelines</li></ul></div>
+  </div>
+</div>
+<div id="tab-str-e" class="tab-panel">
+  <h3>Exactly-Once = Checkpointing + Idempotent Sink</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Checkpointing (at-least-once source)</div><div class="step-desc">Spark writes processed offsets to ADLS checkpoint directory. On restart, it resumes from last committed offset — no re-processing from beginning.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Idempotent Delta Sink</div><div class="step-desc">Delta Lake's write-ahead log rolls back partial writes. MERGE ensures same result whether written once or many times. Together = exactly-once.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">foreachBatch for MERGE</div><div class="step-desc">Use foreachBatch to run custom MERGE logic on each micro-batch — this enables upsert (SCD Type 1/2) on streaming data.</div></div></div>
+  </div>
+<pre><span class="cm"># Exactly-once streaming MERGE using foreachBatch</span>
+<span class="kw">def</span> <span class="fn">upsert_to_delta</span>(microBatchDF, batchId):
+    microBatchDF.createOrReplaceTempView(<span class="str">"updates"</span>)
+    microBatchDF._jdf.sparkSession().sql(<span class="str">"""
+      MERGE INTO catalog.silver.customers t
+      USING updates s ON t.customer_id = s.customer_id
+      WHEN MATCHED THEN UPDATE SET *
+      WHEN NOT MATCHED THEN INSERT *
+    """</span>)
+
+df_parsed.writeStream \
+  .foreachBatch(upsert_to_delta) \
+  .option(<span class="str">"checkpointLocation"</span>, <span class="str">"/mnt/checkpoints/customers"</span>) \
+  .trigger(processingTime=<span class="str">"1 minute"</span>).start()</pre>
+</div>
+<div id="tab-str-t" class="tab-panel">
+  <table>
+    <tr><th>Aspect</th><th>Micro-batch (default)</th><th>Continuous Processing</th></tr>
+    <tr><td>Latency</td><td class="td-amber">100ms – minutes (configurable)</td><td class="td-green">&lt;1ms</td></tr>
+    <tr><td>Throughput</td><td class="td-green">High (batching efficiency)</td><td class="td-amber">Lower</td></tr>
+    <tr><td>Exactly-once</td><td class="td-green">Yes (with Delta + checkpoint)</td><td class="td-amber">At-least-once only</td></tr>
+    <tr><td>Production readiness</td><td class="td-green">Battle-tested</td><td class="td-amber">Experimental in Spark</td></tr>
+    <tr><td>Azure fit</td><td class="td-green">Event Hubs + Databricks standard</td><td class="td-red">Not recommended</td></tr>
+  </table>
+  <div class="info-box tip"><div class="label">Interview Answer</div>"In practice I always use micro-batch with short trigger intervals (30s–5min). True continuous processing sacrifices exactly-once and is experimental in Spark. For sub-second latency requirements I'd evaluate Azure Stream Analytics or Event Hubs → Function App → Cosmos DB as an alternative."</div>
+</div>
+</div>
+<!-- SCD TYPES -->
+<div id="sec-scd" class="section">
+<div class="sec-heading"><span class="icon">🔄</span>SCD Types — Slowly Changing Dimensions</div>
+<p class="sec-sub">All 6 SCD types with visual tables, Databricks implementations, pros/cons, and interview insights.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'scd0')">Type 0</button>
+  <button class="tab-btn" onclick="switchTab(this,'scd1')">Type 1</button>
+  <button class="tab-btn" onclick="switchTab(this,'scd2')">Type 2 ★</button>
+  <button class="tab-btn" onclick="switchTab(this,'scd3')">Type 3</button>
+  <button class="tab-btn" onclick="switchTab(this,'scd4')">Type 4</button>
+  <button class="tab-btn" onclick="switchTab(this,'scd6')">Type 6</button>
+</div>
+<div id="scd0" class="tab-panel active">
+  <h3>Type 0 — Fixed / No Change Allowed</h3>
+  <p>The attribute never changes once loaded. Represents immutable historical facts.</p>
+  <div class="info-box purple"><div class="label">When to Use</div>Original signup date, birth date, account creation timestamp, regulatory codes — values that must never be overwritten.</div>
+  <div class="scd-table">
+    <div class="scd-header"><span>customer_id</span><span>name</span><span>signup_date</span><span>original_region</span></div>
+    <div class="scd-row"><div class="scd-cell">101</div><div class="scd-cell">Alice</div><div class="scd-cell highlight">2020-01-01</div><div class="scd-cell highlight">LOCKED</div></div>
+  </div>
+  <pre><span class="cm"># Type 0: Never include the protected column in MERGE update clause</span>
+MERGE INTO dim_customer t USING updates s ON t.id = s.id
+WHEN NOT MATCHED THEN INSERT (id, name, signup_date)
+VALUES (s.id, s.name, s.signup_date)
+<span class="cm">-- No WHEN MATCHED clause = never update</span></pre>
+  <div class="tradeoff"><div class="tradeoff-side a"><h4>✅ Pros</h4><ul><li>Simple — just omit from updates</li><li>Preserves original truth</li><li>No history overhead</li></ul></div><div class="tradeoff-side b"><h4>❌ Cons</h4><ul><li>Can't fix mistakes without special process</li><li>Requires clear documentation of which cols are Type 0</li></ul></div></div>
+</div>
+<div id="scd1" class="tab-panel">
+  <h3>Type 1 — Overwrite (No History)</h3>
+  <p>Old value is replaced with new value. No historical record. Simplest to implement.</p>
+  <div class="scd-table">
+    <div class="scd-header"><span>customer_id</span><span>city</span><span>email</span></div>
+    <div class="scd-row"><div class="scd-cell">101</div><div class="scd-cell old">Toronto</div><div class="scd-cell">alice@co.com</div></div>
+    <div class="scd-row"><div class="scd-cell">101</div><div class="scd-cell new">Vancouver</div><div class="scd-cell">alice@co.com</div></div>
+  </div>
+  <pre><span class="cm"># Type 1: Simple MERGE — update all matched</span>
+delta_tbl.alias(<span class="str">"t"</span>).merge(updates.alias(<span class="str">"s"</span>), <span class="str">"t.id = s.id"</span>) \
+  .whenMatchedUpdateAll() \
+  .whenNotMatchedInsertAll() \
+  .execute()</pre>
+  <div class="tradeoff"><div class="tradeoff-side a"><h4>✅ Pros</h4><ul><li>Simple implementation</li><li>No extra rows or columns</li><li>Always shows current state</li><li>Fast single-row queries</li></ul></div><div class="tradeoff-side b"><h4>❌ Cons</h4><ul><li>No history tracking</li><li>Can't answer "what was value on date X"</li><li>Breaks point-in-time historical reports</li></ul></div></div>
+</div>
+<div id="scd2" class="tab-panel">
+  <h3>Type 2 — Full History (Most Common in Interviews)</h3>
+  <p>A new row is inserted for each change. Old row is marked inactive with end date. The gold standard for dimension history.</p>
+  <div class="info-box tip"><div class="label">★ Interview Favourite</div>SCD Type 2 is the most commonly asked implementation at senior level. Practice writing it from memory including the MERGE logic.</div>
+  <div class="scd-table">
+    <div class="scd-header"><span>sk</span><span>cust_id</span><span>city</span><span>is_current</span><span>start_dt</span><span>end_dt</span></div>
+    <div class="scd-row"><div class="scd-cell">1001</div><div class="scd-cell">101</div><div class="scd-cell old">Toronto</div><div class="scd-cell old">false</div><div class="scd-cell">2020-01-01</div><div class="scd-cell highlight">2024-06-01</div></div>
+    <div class="scd-row"><div class="scd-cell new">1002</div><div class="scd-cell">101</div><div class="scd-cell new">Vancouver</div><div class="scd-cell new">true</div><div class="scd-cell new">2024-06-01</div><div class="scd-cell">9999-12-31</div></div>
+  </div>
+  <pre><span class="cm"># Step 1: Expire changed rows</span>
+DeltaTable.forName(spark, <span class="str">"catalog.silver.dim_customer"</span>).alias(<span class="str">"t"</span>).merge(
+  updates.alias(<span class="str">"s"</span>),
+  <span class="str">"t.customer_id=s.customer_id AND t.is_current=true AND t.city != s.city"</span>
+).whenMatchedUpdate(set={<span class="str">"is_current"</span>:<span class="str">"false"</span>, <span class="str">"end_date"</span>:<span class="str">"current_date()"</span>}).execute()
+
+<span class="cm"># Step 2: Insert new rows for changed records</span>
+new_rows = updates.join(
+  spark.table(<span class="str">"catalog.silver.dim_customer"</span>).filter(<span class="str">"is_current=true"</span>),
+  [<span class="str">"customer_id"</span>], <span class="str">"left_anti"</span>
+).withColumn(<span class="str">"is_current"</span>, F.lit(<span class="kw">True</span>)) \
+ .withColumn(<span class="str">"start_date"</span>, F.current_date()) \
+ .withColumn(<span class="str">"end_date"</span>, F.lit(<span class="str">"9999-12-31"</span>))
+new_rows.write.format(<span class="str">"delta"</span>).mode(<span class="str">"append"</span>).saveAsTable(<span class="str">"catalog.silver.dim_customer"</span>)</pre>
+  <div class="tradeoff"><div class="tradeoff-side a"><h4>✅ Pros</h4><ul><li>Full history preserved</li><li>Supports point-in-time queries</li><li>Industry standard for warehousing</li><li>Enables trend analysis</li></ul></div><div class="tradeoff-side b"><h4>❌ Cons</h4><ul><li>Table grows indefinitely</li><li>Complex MERGE logic</li><li>Queries need is_current filter</li><li>Higher storage cost</li></ul></div></div>
+</div>
+<div id="scd3" class="tab-panel">
+  <h3>Type 3 — Previous Value Column</h3>
+  <p>Adds a previous_value column alongside current value. Limited to tracking one previous change.</p>
+  <div class="scd-table">
+    <div class="scd-header"><span>customer_id</span><span>current_city</span><span>previous_city</span><span>change_date</span></div>
+    <div class="scd-row"><div class="scd-cell">101</div><div class="scd-cell new">Vancouver</div><div class="scd-cell highlight">Toronto</div><div class="scd-cell">2024-06-01</div></div>
+  </div>
+  <pre>MERGE INTO dim_customer t USING updates s ON t.id = s.id
+WHEN MATCHED AND t.city != s.city THEN UPDATE SET
+  previous_city = t.current_city,
+  current_city = s.city,
+  change_date = current_date()</pre>
+  <div class="tradeoff"><div class="tradeoff-side a"><h4>✅ Pros</h4><ul><li>No table joins needed</li><li>Very simple queries</li><li>Minimal storage overhead</li></ul></div><div class="tradeoff-side b"><h4>❌ Cons</h4><ul><li>Only one previous value stored</li><li>Multiple changes lose history</li><li>Schema changes needed for new tracked attrs</li></ul></div></div>
+</div>
+<div id="scd4" class="tab-panel">
+  <h3>Type 4 — History Table (Separate)</h3>
+  <p>Current values in main table. All history in a separate audit/history table. Best query performance for both current and historical lookups.</p>
+  <div class="cards">
+    <div class="card"><div class="card-icon">📋</div><div class="card-title">Main Table (current only)</div><div class="card-desc">One row per entity, always current. Fast lookups. Used by most operational queries. No joins needed for current state.</div></div>
+    <div class="card"><div class="card-icon">📚</div><div class="card-title">History Table (append-only)</div><div class="card-desc">All changes logged here. Used for auditing and point-in-time analysis. Delta CDF naturally produces this pattern.</div></div>
+  </div>
+  <pre><span class="cm"># Enable CDF for automatic Type 4 history capture</span>
+spark.sql(<span class="str">"ALTER TABLE catalog.silver.dim_customer SET TBLPROPERTIES (delta.enableChangeDataFeed=true)"</span>)
+<span class="cm"># Read full history from CDF</span>
+history_df = spark.read.format(<span class="str">"delta"</span>) \
+  .option(<span class="str">"readChangeFeed"</span>, <span class="str">"true"</span>) \
+  .option(<span class="str">"startingVersion"</span>, <span class="num">0</span>) \
+  .table(<span class="str">"catalog.silver.dim_customer"</span>)</pre>
+  <div class="info-box tip"><div class="label">Use Case</div>GDPR compliance — delete from current table while retaining audit history. Delta CDF is a natural Type 4 implementation.</div>
+</div>
+<div id="scd6" class="tab-panel">
+  <h3>Type 6 — Hybrid (Type 1 + 2 + 3 Combined)</h3>
+  <p>Full history rows (Type 2) + current value propagated to ALL rows (Type 1) + previous column (Type 3). Most powerful, most complex.</p>
+  <div class="scd-table">
+    <div class="scd-header"><span>sk</span><span>cust_id</span><span>city_curr</span><span>city_prev</span><span>is_curr</span><span>start_dt</span><span>end_dt</span></div>
+    <div class="scd-row"><div class="scd-cell">1001</div><div class="scd-cell">101</div><div class="scd-cell highlight">Vancouver</div><div class="scd-cell">Toronto</div><div class="scd-cell old">false</div><div class="scd-cell">2020-01-01</div><div class="scd-cell">2024-06-01</div></div>
+    <div class="scd-row"><div class="scd-cell new">1002</div><div class="scd-cell">101</div><div class="scd-cell new">Vancouver</div><div class="scd-cell highlight">Toronto</div><div class="scd-cell new">true</div><div class="scd-cell new">2024-06-01</div><div class="scd-cell">9999-12-31</div></div>
+  </div>
+  <p>Key: <code>city_curr</code> is backfilled to ALL historical rows so you can always see the current value from any row. Enables "what is the current city for all historical purchases" without a join.</p>
+  <div class="info-box warn"><div class="label">Complexity Warning</div>Type 6 requires a two-pass update: expire old rows AND update their city_curr column to the new value, then insert new row. Complex to implement and maintain.</div>
+  <div class="tradeoff"><div class="tradeoff-side a"><h4>✅ Pros</h4><ul><li>Most flexible querying</li><li>Full history + current state always visible</li><li>Single table, no joins</li></ul></div><div class="tradeoff-side b"><h4>❌ Cons</h4><ul><li>Most complex MERGE logic</li><li>Two-pass update required</li><li>Expensive for high-velocity dims</li></ul></div></div>
+</div>
+</div>
+
+<!-- DATA QUALITY -->
+<div id="sec-dq" class="section">
+<div class="sec-heading"><span class="icon">✅</span>Data Quality</div>
+<p class="sec-sub">Building production-grade data quality frameworks on Databricks and Delta Lake.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'dq-dims')">DQ Dimensions</button>
+  <button class="tab-btn" onclick="switchTab(this,'dq-impl')">Implementation</button>
+  <button class="tab-btn" onclick="switchTab(this,'dq-schema')">Schema Evolution</button>
+  <button class="tab-btn" onclick="switchTab(this,'dq-mon')">Monitoring</button>
+</div>
+<div id="dq-dims" class="tab-panel active">
+  <div class="cards">
+    <div class="card accent-green"><div class="card-icon">📊</div><div class="card-title">Completeness</div><div class="card-desc">All expected records present. NULL rate, row count vs expected, required fields filled. Alert if daily count drops &gt;5%.</div></div>
+    <div class="card accent-purple"><div class="card-icon">🔁</div><div class="card-title">Uniqueness</div><div class="card-desc">No duplicate primary keys. Use ROW_NUMBER() or MERGE on business key to deduplicate. Track duplicate rate over time.</div></div>
+    <div class="card accent-amber"><div class="card-icon">🎯</div><div class="card-title">Accuracy</div><div class="card-desc">Values within expected range. Reference data validation. Cross-system reconciliation. Amount &gt; 0, age 0–120.</div></div>
+    <div class="card"><div class="card-icon">⏰</div><div class="card-title">Freshness</div><div class="card-desc">Data arrives within SLA. Alert if max(updated_at) &gt; now() - 2h. Track pipeline lag continuously.</div></div>
+    <div class="card accent-red"><div class="card-icon">🔗</div><div class="card-title">Consistency</div><div class="card-desc">Referential integrity — FK exists in parent table. Cross-table row count reconciliation. Sum of parts = total.</div></div>
+    <div class="card"><div class="card-icon">📋</div><div class="card-title">Validity</div><div class="card-desc">Values conform to expected format/domain. Email regex, date format, enum values, numeric range, ZIP code pattern.</div></div>
+  </div>
+</div>
+<div id="dq-impl" class="tab-panel">
+  <h3>Delta Live Tables Expectations</h3>
+<pre><span class="kw">import</span> dlt
+
+<span class="fn">@dlt.table</span>
+<span class="fn">@dlt.expect_or_drop</span>(<span class="str">"valid_customer_id"</span>, <span class="str">"customer_id IS NOT NULL"</span>)
+<span class="fn">@dlt.expect_or_drop</span>(<span class="str">"valid_email"</span>, <span class="str">"email RLIKE '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+'"</span>)
+<span class="fn">@dlt.expect</span>(<span class="str">"positive_amount"</span>, <span class="str">"amount > 0"</span>)          <span class="cm"># warn, keep record</span>
+<span class="fn">@dlt.expect_or_fail</span>(<span class="str">"no_future_dates"</span>, <span class="str">"order_date <= current_date()"</span>)  <span class="cm"># fail pipeline</span>
+<span class="kw">def</span> <span class="fn">silver_orders</span>():
+    <span class="kw">return</span> dlt.read(<span class="str">"bronze_orders"</span>).select(...)</pre>
+  <h3>Custom DQ Framework</h3>
+<pre><span class="kw">def</span> <span class="fn">run_dq_checks</span>(df, table_name):
+    total = df.count()
+    checks = {
+      <span class="str">"null_rate_cust_id"</span>: df.filter(F.col(<span class="str">"customer_id"</span>).isNull()).count() / total,
+      <span class="str">"duplicate_rate"</span>: <span class="num">1</span> - df.dropDuplicates([<span class="str">"order_id"</span>]).count() / total,
+      <span class="str">"pct_negative_amount"</span>: df.filter(F.col(<span class="str">"amount"</span>) &lt; <span class="num">0</span>).count() / total
+    }
+    <span class="cm"># Write metrics to monitoring Delta table</span>
+    dq_rows = [(table_name, k, v, <span class="str">"PASS"</span> <span class="kw">if</span> v &lt; <span class="num">0.01</span> <span class="kw">else</span> <span class="str">"FAIL"</span>) <span class="kw">for</span> k, v <span class="kw">in</span> checks.items()]
+    spark.createDataFrame(dq_rows, [<span class="str">"table"</span>, <span class="str">"check"</span>, <span class="str">"value"</span>, <span class="str">"status"</span>]) \
+      .write.format(<span class="str">"delta"</span>).mode(<span class="str">"append"</span>).saveAsTable(<span class="str">"catalog.monitoring.dq_metrics"</span>)</pre>
+</div>
+<div id="dq-schema" class="tab-panel">
+  <table>
+    <tr><th>Schema Change</th><th>Delta Behavior</th><th>Action</th></tr>
+    <tr><td>Add new column</td><td class="td-green">Safe — mergeSchema handles it</td><td>Enable mergeSchema option</td></tr>
+    <tr><td>Remove column</td><td class="td-amber">Old queries still work</td><td>Update downstream queries, deprecate gracefully</td></tr>
+    <tr><td>Change data type</td><td class="td-red">Write fails</td><td>Widen only (int→long OK), others need migration</td></tr>
+    <tr><td>Rename column</td><td class="td-red">Breaking</td><td>Add new col, backfill, remove old</td></tr>
+    <tr><td>Reorder columns</td><td class="td-green">Safe with column mapping</td><td>Enable columnMapping.mode = name</td></tr>
+  </table>
+<pre><span class="cm"># Allow schema evolution on write</span>
+df.write.format(<span class="str">"delta"</span>) \
+  .option(<span class="str">"mergeSchema"</span>, <span class="str">"true"</span>) \
+  .mode(<span class="str">"append"</span>).saveAsTable(<span class="str">"catalog.silver.orders"</span>)
+<span class="cm"># Enable column mapping for safe renames</span>
+spark.sql(<span class="str">"ALTER TABLE t SET TBLPROPERTIES ('delta.columnMapping.mode'='name')"</span>)</pre>
+</div>
+<div id="dq-mon" class="tab-panel">
+  <h3>Monitoring Strategy</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">DQ Metrics Delta Table</div><div class="step-desc">Store all check results: (run_id, table, check_name, value, threshold, status, run_ts). Query trends over time.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Azure Monitor Alerts</div><div class="step-desc">Alert on null_rate &gt; 5%, row_count drop &gt; 10% vs 7-day average, freshness lag &gt; SLA threshold.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Power BI DQ Dashboard</div><div class="step-desc">Live dashboard on DQ metrics table. Trend charts for null rates, freshness, duplicate rates per table.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Great Expectations Integration</div><div class="step-desc">Define expectation suites per table. Run as Databricks job step. Publish HTML data docs to ADLS for stakeholders.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- BACKFILL -->
+<div id="sec-backfill" class="section">
+<div class="sec-heading"><span class="icon">⏮️</span>Backfill Strategies</div>
+<p class="sec-sub">Safely reload historical data without breaking production pipelines.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'bf-p')">Patterns</button>
+  <button class="tab-btn" onclick="switchTab(this,'bf-i')">Idempotency</button>
+  <button class="tab-btn" onclick="switchTab(this,'bf-perf')">Performance</button>
+</div>
+<div id="bf-p" class="tab-panel active">
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Partition-based Backfill</div><div class="step-desc">Overwrite each partition independently. Safe — doesn't affect other partitions. Best for date-partitioned tables.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Shadow Table Pattern</div><div class="step-desc">Write backfill to a shadow table. Validate quality. Swap with RENAME. Zero downtime, safe rollback via Delta time travel.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Range-based MERGE Replay</div><div class="step-desc">Replay a specific date range using idempotent MERGE. Safe to re-run. Best for SCD Type 2 dimensions.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Auto Loader Backfill</div><div class="step-desc">Use trigger(availableNow=True) on new checkpoint location to process historical files in batch mode using same streaming code.</div></div></div>
+  </div>
+<pre><span class="cm"># Partition backfill — replaceWhere = atomic, idempotent</span>
+spark.conf.set(<span class="str">"spark.sql.sources.partitionOverwriteMode"</span>, <span class="str">"dynamic"</span>)
+backfill_df = spark.read.format(<span class="str">"delta"</span>) \
+  .option(<span class="str">"versionAsOf"</span>, <span class="num">0</span>) \
+  .table(<span class="str">"catalog.bronze.orders"</span>) \
+  .filter(<span class="str">"order_date BETWEEN '2023-01-01' AND '2023-12-31'"</span>)
+backfill_df.write.format(<span class="str">"delta"</span>) \
+  .mode(<span class="str">"overwrite"</span>) \
+  .option(<span class="str">"replaceWhere"</span>, <span class="str">"order_date BETWEEN '2023-01-01' AND '2023-12-31'"</span>) \
+  .saveAsTable(<span class="str">"catalog.silver.orders"</span>)</pre>
+</div>
+<div id="bf-i" class="tab-panel">
+  <div class="info-box purple"><div class="label">Definition</div>An idempotent operation produces the same result whether run once or many times. Essential for safe backfills and retries.</div>
+  <table>
+    <tr><th>Operation</th><th>Idempotent?</th><th>Why</th></tr>
+    <tr><td>MERGE (upsert)</td><td class="td-green">✅ Yes</td><td>Same result whether run 1x or 10x</td></tr>
+    <tr><td>INSERT OVERWRITE PARTITION</td><td class="td-green">✅ Yes</td><td>Replaces partition atomically each time</td></tr>
+    <tr><td>replaceWhere write</td><td class="td-green">✅ Yes</td><td>Atomic replacement of matching rows</td></tr>
+    <tr><td>INSERT INTO (append)</td><td class="td-red">❌ No</td><td>Creates duplicates on re-run</td></tr>
+    <tr><td>Streaming append (no checkpoint)</td><td class="td-red">❌ No</td><td>Re-processes from beginning = duplicates</td></tr>
+  </table>
+  <div class="info-box warn"><div class="label">Anti-Pattern</div>Never use append mode for backfills. A failed job that partially ran leaves duplicates. Always use MERGE or replaceWhere.</div>
+</div>
+<div id="bf-perf" class="tab-panel">
+  <h3>Backfill Performance Considerations</h3>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Off-Peak Scheduling</div><div class="step-desc">Run backfills during off-peak hours to avoid competing with streaming jobs for cluster resources and ADLS IOPS.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Dedicated Backfill Cluster</div><div class="step-desc">Use a separate, larger spot-instance cluster for backfill. Don't share with production streaming — isolate the blast radius.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Chunk by Partition</div><div class="step-desc">Process one month at a time rather than all years at once. Enables progress tracking and partial failure recovery.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">OPTIMIZE After Backfill</div><div class="step-desc">Backfills often create many small files. Run OPTIMIZE + ZORDER after completion to restore query performance.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- CLUSTER DESIGN -->
+<div id="sec-cluster" class="section">
+<div class="sec-heading"><span class="icon">⚙️</span>Cluster Design</div>
+<p class="sec-sub">Right-sizing and optimizing Databricks clusters for performance and cost.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'cl-t')">Cluster Types</button>
+  <button class="tab-btn" onclick="switchTab(this,'cl-s')">Sizing Guide</button>
+  <button class="tab-btn" onclick="switchTab(this,'cl-c')">Cost Optimization</button>
+</div>
+<div id="cl-t" class="tab-panel active">
+  <div class="tradeoff">
+    <div class="tradeoff-side a"><h4>All-Purpose Clusters</h4><ul><li>Interactive development</li><li>Shared by multiple users</li><li>Higher DBU rate (always-on)</li><li>Auto-terminate after idle</li><li>Cannot be shared across Workflow jobs</li></ul></div>
+    <div class="tradeoff-side b"><h4>Job Clusters</h4><ul><li>Created per job run, terminated after</li><li>Cheapest — no idle cost</li><li>Best for production pipelines</li><li>Faster startup with instance pools</li><li>Use cluster policies for governance</li></ul></div>
+  </div>
+  <table>
+    <tr><th>Use Case</th><th>Cluster Type</th><th>Worker Type</th><th>Photon?</th></tr>
+    <tr><td>ETL batch jobs</td><td>Job cluster</td><td>Memory optimized (E-series)</td><td class="td-green">Yes</td></tr>
+    <tr><td>Structured Streaming</td><td>Job cluster (long-running)</td><td>Compute optimized (F-series)</td><td class="td-green">Yes</td></tr>
+    <tr><td>ML training</td><td>Job cluster</td><td>GPU / High memory</td><td class="td-amber">Optional</td></tr>
+    <tr><td>SQL analytics</td><td>SQL Warehouse (Serverless)</td><td>Managed</td><td class="td-green">Yes</td></tr>
+    <tr><td>Dev / exploration</td><td>All-purpose</td><td>General purpose</td><td class="td-amber">Optional</td></tr>
+  </table>
+</div>
+<div id="cl-s" class="tab-panel">
+  <div class="est-box">
+    <h4>Sizing Example: 1 TB Daily Batch ETL</h4>
+    <div class="est-row"><span>Compressed Parquet in memory</span><span class="est-val">~100 GB</span></div>
+    <div class="est-row"><span>Spark memory overhead (3x)</span><span class="est-val">~300 GB RAM needed</span></div>
+    <div class="est-row"><span>Worker (Standard_E16ds_v5 = 128GB)</span><span class="est-val">3–4 workers needed</span></div>
+    <div class="est-row"><span>Processing window target</span><span class="est-val">2 hours</span></div>
+    <div class="est-row"><span>Photon DBU cost (4 workers × 2h)</span><span class="est-val">~40 DBU</span></div>
+  </div>
+  <div class="info-box tip"><div class="label">Sizing Rule of Thumb</div>Target 128–200 MB per partition. num_partitions = num_cores × 2–4. Enable AQE to auto-tune at runtime. Always measure Spark UI before scaling up.</div>
+  <pre><span class="cm"># Check partition sizes</span>
+df.rdd.mapPartitions(<span class="kw">lambda</span> it: [sum(<span class="num">1</span> <span class="kw">for</span> _ <span class="kw">in</span> it)]).collect()
+<span class="cm"># Target 128-200MB per partition</span>
+spark.conf.set(<span class="str">"spark.sql.adaptive.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.set(<span class="str">"spark.sql.adaptive.advisoryPartitionSizeInBytes"</span>, <span class="str">"134217728"</span>)  <span class="cm"># 128MB</span></pre>
+</div>
+<div id="cl-c" class="tab-panel">
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Spot Instances for Batch (60–80% savings)</div><div class="step-desc">Use Azure Spot VMs for batch jobs. Configure fallback to on-demand for driver. Streaming jobs need on-demand to avoid interruptions.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Instance Pools</div><div class="step-desc">Pre-warm a pool of VMs. Job clusters attach instantly (no 3–5 min spin-up). Reduces total wall time and improves SLA compliance.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Photon Engine</div><div class="step-desc">Enable for SQL-heavy workloads — 2–5x faster with same or fewer DBUs. Best ROI for MERGE, Z-ORDER, and aggregation operations.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Cluster Policies + Auto-Terminate</div><div class="step-desc">Enforce size limits, required tags, 30-min auto-terminate on interactive clusters. Prevent runaway costs from oversized dev clusters.</div></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Serverless SQL Warehouses for BI</div><div class="step-desc">Auto-scales to zero. No idle cost. Perfect for Power BI / Tableau DirectQuery. Pay only per query second.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- PERFORMANCE -->
+<div id="sec-perf" class="section">
+<div class="sec-heading"><span class="icon">⚡</span>Performance Optimization</div>
+<p class="sec-sub">Squeeze maximum performance from your Databricks and Delta Lake pipelines.</p>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(this,'pf-d')">Delta Optimization</button>
+  <button class="tab-btn" onclick="switchTab(this,'pf-s')">Spark Tuning</button>
+  <button class="tab-btn" onclick="switchTab(this,'pf-j')">Join Strategies</button>
+  <button class="tab-btn" onclick="switchTab(this,'pf-a')">Anti-Patterns</button>
+</div>
+<div id="pf-d" class="tab-panel active">
+  <table>
+    <tr><th>Technique</th><th>What It Does</th><th>When to Use</th><th>Command</th></tr>
+    <tr><td><strong>Z-Ordering</strong></td><td>Co-locates related data in files for skipping</td><td>High-cardinality filter columns</td><td><code>OPTIMIZE t ZORDER BY (col)</code></td></tr>
+    <tr><td><strong>Liquid Clustering</strong></td><td>Incremental auto-clustering</td><td>Replace Z-order on large frequently-updated tables</td><td><code>CLUSTER BY (col)</code></td></tr>
+    <tr><td><strong>OPTIMIZE</strong></td><td>Compacts small files to 1GB target</td><td>After large loads, weekly minimum</td><td><code>OPTIMIZE table_name</code></td></tr>
+    <tr><td><strong>VACUUM</strong></td><td>Removes old file versions</td><td>Weekly. Default 7-day retention.</td><td><code>VACUUM t RETAIN 168 HOURS</code></td></tr>
+    <tr><td><strong>Data Skipping</strong></td><td>Skip files using min/max stats</td><td>Always on — choose good partition cols</td><td>Auto (no action needed)</td></tr>
+  </table>
+<pre><span class="cm"># Production OPTIMIZE + ZORDER (run after large loads)</span>
+spark.sql(<span class="str">"OPTIMIZE catalog.silver.orders ZORDER BY (customer_id, order_date)"</span>)
+<span class="cm"># Liquid Clustering (Databricks 13.3+ — replaces Z-Order for large tables)</span>
+spark.sql(<span class="str">"ALTER TABLE catalog.silver.orders CLUSTER BY (customer_id, order_date)"</span>)</pre>
+</div>
+<div id="pf-s" class="tab-panel">
+<pre><span class="cm"># AQE — enable adaptive query execution</span>
+spark.conf.set(<span class="str">"spark.sql.adaptive.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.set(<span class="str">"spark.sql.adaptive.skewJoin.enabled"</span>, <span class="str">"true"</span>)
+spark.conf.set(<span class="str">"spark.sql.adaptive.coalescePartitions.enabled"</span>, <span class="str">"true"</span>)
+
+<span class="cm"># Detect and fix data skew with salting</span>
+SALT = <span class="num">10</span>
+df_left = df_left.withColumn(<span class="str">"salt"</span>, (F.rand() * SALT).cast(<span class="str">"int"</span>))
+df_right_exploded = df_right.withColumn(<span class="str">"salt"</span>, F.explode(F.array([F.lit(i) <span class="kw">for</span> i <span class="kw">in</span> range(SALT)])))
+result = df_left.join(df_right_exploded, [<span class="str">"key"</span>, <span class="str">"salt"</span>])
+
+<span class="cm"># Caching for repeated access</span>
+df_lookup.cache()    <span class="cm"># memory</span>
+df.persist(StorageLevel.DISK_ONLY)   <span class="cm"># disk if too large for RAM</span>
+df.unpersist()       <span class="cm"># always unpersist when done</span></pre>
+</div>
+<div id="pf-j" class="tab-panel">
+  <table>
+    <tr><th>Join Strategy</th><th>Trigger Condition</th><th>Memory Impact</th><th>Best For</th></tr>
+    <tr><td>Broadcast Hash Join</td><td>Small table &lt;10MB (default)</td><td class="td-green">Low (driver-side)</td><td>Large fact + small dim lookup</td></tr>
+    <tr><td>Sort-Merge Join</td><td>Both tables large</td><td class="td-amber">High (shuffle both)</td><td>Two large tables</td></tr>
+    <tr><td>Shuffle Hash Join</td><td>Medium tables</td><td class="td-amber">Medium</td><td>Avoid sort overhead</td></tr>
+  </table>
+<pre><span class="cm"># Force broadcast hint for known-small table</span>
+result = large_df.join(F.broadcast(small_lookup), <span class="str">"key"</span>)
+<span class="cm"># Tune broadcast threshold (default 10MB)</span>
+spark.conf.set(<span class="str">"spark.sql.autoBroadcastJoinThreshold"</span>, <span class="str">"50m"</span>)
+<span class="cm"># Disable broadcast (force sort-merge for reproducibility)</span>
+spark.conf.set(<span class="str">"spark.sql.autoBroadcastJoinThreshold"</span>, <span class="str">"-1"</span>)</pre>
+</div>
+<div id="pf-a" class="tab-panel">
+  <h3>Common Performance Anti-Patterns</h3>
+  <table>
+    <tr><th>Anti-Pattern</th><th>Problem</th><th>Fix</th></tr>
+    <tr><td>Too many small files</td><td>Driver overwhelmed listing files</td><td>OPTIMIZE regularly, tune minFileSize</td></tr>
+    <tr><td>collect() on large DF</td><td>OOM on driver node</td><td>Use write() or take(n) with limit</td></tr>
+    <tr><td>udf() in Python</td><td>Python serialization overhead</td><td>Use Spark SQL native functions or pandas_udf</td></tr>
+    <tr><td>.count() mid-pipeline</td><td>Forces full scan, breaks lazy eval</td><td>Defer counts to final DQ check</td></tr>
+    <tr><td>No partition pruning</td><td>Full table scan every query</td><td>Always filter on partition column</td></tr>
+    <tr><td>Shuffle after MERGE</td><td>Unnecessary shuffle post-write</td><td>Write then read fresh; don't chain transforms</td></tr>
+  </table>
+</div>
+</div>
+
+<!-- ESTIMATION -->
+<div id="sec-estimation" class="section">
+<div class="sec-heading"><span class="icon">🧮</span>System Design Estimations</div>
+<p class="sec-sub">Back-of-envelope calculations to anchor architecture decisions in interviews.</p>
+<div class="info-box purple"><div class="label">Interview Tip</div>Always estimate before designing. It shows architectural maturity and guides component selection (e.g. how many Event Hub partitions? which cluster size?). Interviewers score your reasoning process, not just the final number.</div>
+<h3>Reference Numbers</h3>
+<table>
+  <tr><th>Item</th><th>Size / Rate</th><th>Notes</th></tr>
+  <tr><td>1 record (typical transactional)</td><td>~500 B – 2 KB</td><td>Varies by column count</td></tr>
+  <tr><td>1 million records</td><td>~0.5–2 GB raw</td><td>Before compression</td></tr>
+  <tr><td>Parquet compression ratio</td><td>5–10x vs CSV/JSON</td><td>Columnar + dictionary encoding</td></tr>
+  <tr><td>Delta overhead</td><td>+10–20%</td><td>Transaction log files</td></tr>
+  <tr><td>Spark read speed (ADLS)</td><td>~1–5 GB/s per core</td><td>Parquet with Photon</td></tr>
+  <tr><td>Event Hubs throughput</td><td>1 MB/s per partition</td><td>Scale by adding partitions</td></tr>
+  <tr><td>ADLS Gen2 throughput</td><td>~10 Gbps per account</td><td>Practically unlimited for DE</td></tr>
+  <tr><td>Databricks Photon DBU rate</td><td>~$0.40–0.55/DBU</td><td>Enterprise rate varies</td></tr>
+</table>
+<div class="est-box">
+  <h4>Example 1: CDC Pipeline — 10M records/day</h4>
+  <div class="est-row"><span>Daily volume (raw)</span><span class="est-val">10M × 1 KB = 10 GB/day</span></div>
+  <div class="est-row"><span>Parquet compressed (7x)</span><span class="est-val">~1.5 GB/day stored</span></div>
+  <div class="est-row"><span>1 year retention</span><span class="est-val">1.5 GB × 365 = ~550 GB</span></div>
+  <div class="est-row"><span>Peak rate (8h window)</span><span class="est-val">10M ÷ 28,800s = ~347 rec/s = ~0.35 MB/s</span></div>
+  <div class="est-row"><span>Event Hubs partitions needed</span><span class="est-val">1 partition (1 MB/s capacity)</span></div>
+  <div class="est-row"><span>Databricks cluster</span><span class="est-val">2-worker, 2-hour window</span></div>
+  <div class="est-row"><span>ADLS monthly cost</span><span class="est-val">~550 GB × $0.018 ≈ $10/month</span></div>
+</div>
+<div class="est-box">
+  <h4>Example 2: Petabyte-Scale Analytics (1 PB/year)</h4>
+  <div class="est-row"><span>Daily raw ingest</span><span class="est-val">1 PB ÷ 365 = ~2.7 TB/day</span></div>
+  <div class="est-row"><span>After Parquet compression</span><span class="est-val">~400 GB/day stored</span></div>
+  <div class="est-row"><span>Memory needed (3x factor)</span><span class="est-val">~1.2 TB RAM</span></div>
+  <div class="est-row"><span>Workers (Standard_E128ds = 864GB)</span><span class="est-val">2 workers with room for overhead</span></div>
+  <div class="est-row"><span>Event Hub partitions (31 MB/s peak)</span><span class="est-val">32 partitions minimum</span></div>
+  <div class="est-row"><span>Annual ADLS cost (mixed tiers)</span><span class="est-val">~$3,500/year</span></div>
+  <div class="est-row"><span>Databricks DBU (daily batch)</span><span class="est-val">~$6/day → ~$2,200/year</span></div>
+</div>
+</div>
+<!-- INTERVIEW QUESTIONS -->
+<div id="sec-interview" class="section">
+<div class="sec-heading"><span class="icon">🎙️</span>10 System Design Questions</div>
+<p class="sec-sub">Senior-level DE system design questions with complete answers, architecture, and spoken interview scripts.</p>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q1: Design a Lakehouse supporting both streaming and historical backfills</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Architecture</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="iq-section"><h4>🎯 Clarifying Questions</h4><ul><li>Data volume? (events/day, GB/day)</li><li>Streaming latency SLA? (seconds, minutes)</li><li>How far back does backfill go? Years?</li><li>Downstream consumers? BI, ML, APIs?</li><li>Compliance requirements? GDPR, HIPAA?</li></ul></div>
+    <div class="iq-section"><h4>📋 Architecture</h4>
+      <div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[Event Hubs] --> B[Structured Streaming]
+  C[Historical ADLS Files] --> D[Auto Loader]
+  B --> E[Bronze Delta]
+  D --> E
+  E --> F[Silver — MERGE]
+  F --> G[Gold — Aggregated]
+  G --> H[Snowflake]
+  G --> I[Power BI]
+  G --> J[ML Feature Store]
+      </div></div>
+    </div>
+    <div class="iq-section"><h4>🔑 Key Decisions</h4><ul>
+      <li><strong>Single code path:</strong> Auto Loader with trigger(availableNow=True) for backfill, trigger(processingTime) for streaming — same transform code</li>
+      <li><strong>Separate checkpoints:</strong> Backfill job uses /checkpoints/backfill_2023/, streaming uses /checkpoints/streaming/ — no interference</li>
+      <li><strong>Idempotent MERGE to Silver:</strong> Safe to re-run any backfill window</li>
+      <li><strong>replaceWhere:</strong> Backfill specific date range without touching other partitions</li>
+    </ul></div>
+    <div class="iq-section"><h4>⚠️ Bottlenecks & Failures</h4><ul>
+      <li>Backfill cluster competing with streaming for ADLS IOPS → use separate cluster</li>
+      <li>Bronze MERGE contention from concurrent writes → optimistic concurrency + retry</li>
+      <li>Schema drift in source → validate at Bronze ingestion, quarantine unknowns</li>
+    </ul></div>
+    <div class="iq-section"><h4>🎤 Spoken Answer</h4><div class="info-box purple"><div class="label">Say This</div>"I'd use Medallion architecture on Azure Databricks. Streaming via Event Hubs → Structured Streaming → Bronze Delta with checkpointing. Backfill reuses the same transform code but uses Auto Loader with trigger availableNow and a separate checkpoint path. Both converge at Bronze, then idempotent MERGE produces Silver. Key insight: one codebase, two trigger modes. This dramatically reduces maintenance."</div></div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q2: Detect daily file arrival and corrupt files in ADLS</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Monitoring</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="iq-section"><h4>📋 Solution</h4><ul>
+      <li><strong>File Arrival:</strong> Azure Event Grid → Event Hubs → Databricks trigger. Auto Loader with schema validation detects each new file.</li>
+      <li><strong>Corrupt Detection:</strong> Try parsing each file. Compare row count to manifest/expected count. MD5 checksum validation.</li>
+      <li><strong>Completeness:</strong> Control table tracks expected_files vs arrived_files per source per day. Alert if count &lt; threshold by cutoff time.</li>
+    </ul></div>
+<pre><span class="kw">def</span> <span class="fn">validate_file</span>(file_path):
+    <span class="kw">try</span>:
+        df = spark.read.format(<span class="str">"parquet"</span>).load(file_path)
+        actual_count = df.count()
+        expected = get_expected_from_manifest(file_path)
+        <span class="kw">if</span> actual_count &lt; expected * <span class="num">0.95</span>:  <span class="cm"># 5% tolerance</span>
+            move_to_quarantine(file_path)
+            alert_ops(<span class="str">f"Low count: {actual_count} vs expected {expected}"</span>)
+    <span class="kw">except</span> Exception <span class="kw">as</span> e:
+        move_to_quarantine(file_path); alert_ops(str(e))</pre>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q3: Single Delta table vs multiple Delta tables — when and why?</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Design Decision</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="tradeoff">
+      <div class="tradeoff-side a"><h4>Single Wide Table</h4><ul><li>Fewer joins — simpler queries</li><li>One OPTIMIZE/ZORDER job</li><li>Harder schema evolution</li><li>Access control at row/column level only</li><li>Good: high-volume event logs</li></ul></div>
+      <div class="tradeoff-side b"><h4>Multiple Tables</h4><ul><li>Independent schema evolution</li><li>Granular RBAC per table</li><li>Different retention/SLA per table</li><li>More joins at query time</li><li>Good: dim + fact + SCD models</li></ul></div>
+    </div>
+    <div class="info-box tip"><div class="label">Interview Answer</div>"Choose based on access patterns. If consumers always query everything together with no PII separation: single table reduces complexity. If different teams own different segments, schemas evolve independently, or different SLAs apply: split. For analytics with history, I default to Kimball star schema: fact table + dimension tables joined at Gold layer."</div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q4: Pipeline serving multiple consumers with different SLAs</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Architecture</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[Silver Delta] --> B[Gold_Realtime — 5min]
+  A --> C[Gold_Hourly — BI]
+  A --> D[Gold_Daily — ML]
+  B --> E[Live Dashboard APIs]
+  C --> F[Power BI DirectQuery]
+  D --> G[ML Training Jobs]
+    </div></div>
+    <div class="iq-section"><h4>Key Decisions</h4><ul>
+      <li><strong>Tiered Gold tables:</strong> Separate materialized views per SLA tier. DLT streaming for real-time, batch DLT for BI, scheduled job for ML.</li>
+      <li><strong>Delta Sharing:</strong> Expose Gold tables via Delta Sharing to Snowflake, external teams — no data copies.</li>
+      <li><strong>Unity Catalog RBAC:</strong> Control which team can access which Gold table at column level.</li>
+      <li><strong>Serverless SQL Warehouse:</strong> Power BI uses Serverless — auto-scales, zero idle cost.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q5: Design CDC pipeline from SQL Server to Databricks</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">CDC</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[SQL Server Txn Log] --> B[Debezium / ADF CDC]
+  B --> C[Event Hubs]
+  C --> D[Structured Streaming]
+  D --> E{op field?}
+  E -->|insert| F[Append Bronze]
+  E -->|update| G[MERGE Silver]
+  E -->|delete| H[Soft Delete Flag]
+  F --> G
+  G --> I[Gold Layer]
+    </div></div>
+    <div class="iq-section"><h4>Critical Implementation Points</h4><ul>
+      <li><strong>Enable CDC on SQL Server:</strong> EXEC sys.sp_cdc_enable_table — requires DBA access</li>
+      <li><strong>Operation column:</strong> Debezium emits op: c (create), u (update), d (delete)</li>
+      <li><strong>Soft deletes only:</strong> Set is_deleted=true, deleted_at=timestamp. Hard deletes only for GDPR erasure requests via Unity Catalog.</li>
+      <li><strong>Initial snapshot:</strong> Full table dump first, then start CDC. Use replaceWhere for idempotent initial load.</li>
+      <li><strong>Schema drift:</strong> SQL Server schema changes must propagate. Use mergeSchema + DLT expectations for safeguard.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q6: Design a multi-tenant data platform</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Platform</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="iq-section"><h4>Isolation Strategies</h4><ul>
+      <li><strong>Namespace:</strong> One Unity Catalog catalog per enterprise tenant. Row-level security for SMB tier on shared catalog.</li>
+      <li><strong>Storage:</strong> Separate ADLS containers per tenant with Managed Identity per tenant. No cross-tenant storage access possible at the IAM layer.</li>
+      <li><strong>Compute:</strong> Dedicated SQL Warehouses for Gold tier. Shared serverless with row filters for SMB tier.</li>
+      <li><strong>Cost attribution:</strong> All clusters tagged with tenant_id. Azure Cost Management query by tag for chargeback.</li>
+    </ul></div>
+    <div class="info-box tip"><div class="label">3-Tier Isolation Model</div>"Gold tier: dedicated compute + dedicated storage. Silver tier: shared compute + Unity Catalog row-level security. Bronze tier: shared everything + strict tagging. This balances isolation with cost efficiency."</div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q7: Design a petabyte-scale analytics pipeline</div><div class="iq-meta"><span class="badge badge-purple">Staff</span><span class="badge badge-green">Scale</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="est-box"><h4>PB Pipeline Estimation</h4>
+      <div class="est-row"><span>Daily raw ingest</span><span class="est-val">2.7 TB/day</span></div>
+      <div class="est-row"><span>After Parquet (10x)</span><span class="est-val">270 GB/day stored</span></div>
+      <div class="est-row"><span>Event Hub partitions (31 MB/s)</span><span class="est-val">32 partitions</span></div>
+      <div class="est-row"><span>Cluster for 4hr SLA</span><span class="est-val">10 × Standard_E128ds workers</span></div>
+    </div>
+    <div class="iq-section"><h4>Scale-Specific Decisions</h4><ul>
+      <li><strong>Liquid Clustering over Z-Order:</strong> At PB scale, full Z-Order OPTIMIZE takes too long. Liquid Clustering incrementally re-clusters as a background job.</li>
+      <li><strong>Hot/warm/cold tiering:</strong> Last 30 days on Premium ADLS. 31–365 days on Cool tier. 1yr+ on Archive. Azure lifecycle policy automates transitions.</li>
+      <li><strong>Query federation:</strong> Snowflake external tables on ADLS Gold avoids data movement for BI consumers.</li>
+      <li><strong>Horizontal scaling:</strong> Auto-scaling clusters, 32+ Event Hub partitions, multi-account ADLS if approaching throughput limits.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q8: Design a data quality monitoring system</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Quality</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="iq-section"><h4>Architecture</h4><ul>
+      <li><strong>DQ as a sidecar job:</strong> Every pipeline job triggers a DQ job. Results stored in catalog.monitoring.dq_metrics Delta table.</li>
+      <li><strong>Metrics schema:</strong> (run_id, table_name, check_name, value, threshold, status, run_ts) — queryable for trends.</li>
+      <li><strong>Alerting:</strong> Azure Monitor alert on freshness lag. Databricks job notification on DQ FAIL status. PagerDuty integration for P1.</li>
+      <li><strong>Great Expectations:</strong> Define expectation suites per table. Run as Databricks job step. Publish HTML data docs to ADLS.</li>
+      <li><strong>Dashboard:</strong> Power BI on dq_metrics table. Trend charts for null rates, freshness, duplicate rates per table over time.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q9: Design an end-to-end reporting architecture</div><div class="iq-meta"><span class="badge badge-purple">Senior</span><span class="badge badge-green">Reporting</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[Source Systems] --> B[Bronze Delta]
+  B --> C[Silver — Cleaned]
+  C --> D[Gold — Star Schema]
+  D --> E[Snowflake]
+  D --> F[Databricks SQL Serverless]
+  E --> G[Power BI Premium]
+  F --> H[Tableau]
+  D --> I[Delta Sharing — External]
+    </div></div>
+    <div class="iq-section"><h4>Key Design Decisions</h4><ul>
+      <li><strong>DirectQuery vs Import:</strong> DirectQuery on Databricks SQL Serverless for real-time reports (&lt;5min lag). Import mode for pixel-perfect monthly executive reports (faster render, stale acceptable).</li>
+      <li><strong>Snowflake as secondary serving layer:</strong> Better for complex multi-join SQL, cross-database queries, pre-computed aggregates.</li>
+      <li><strong>Pre-aggregated Gold tables:</strong> Weekly/monthly rollups stored separately to reduce query fan-out. Use DLT for incremental refresh.</li>
+      <li><strong>Row-level security:</strong> Unity Catalog row filters push down to Power BI via OIDC passthrough — users see only their region's data.</li>
+    </ul></div>
+  </div>
+</div>
+
+<div class="interview-q">
+  <div class="iq-header" onclick="toggleIQ(this)"><div><div class="iq-title">Q10: Design a real-time fraud detection pipeline</div><div class="iq-meta"><span class="badge badge-purple">Staff</span><span class="badge badge-green">Real-Time</span></div></div><span style="color:var(--text3);font-size:18px;margin-left:16px">▼</span></div>
+  <div class="iq-body">
+    <div class="mermaid-wrap"><div class="mermaid">
+graph LR
+  A[Transaction API] --> B[Event Hubs — Priority]
+  B --> C[Structured Streaming — 5s trigger]
+  C --> D[Feature Engineering]
+  D --> E[MLflow Model Inference]
+  E --> F{Score > 0.8?}
+  F -->|Fraud| G[Alert + Block]
+  F -->|Legit| H[Silver — Approved]
+  D --> I[Feature Store Delta]
+    </div></div>
+    <div class="iq-section"><h4>Critical Design Points</h4><ul>
+      <li><strong>Latency:</strong> 5-second trigger gives &lt;10s end-to-end P99. Use foreachBatch for MERGE to Silver.</li>
+      <li><strong>Stateful features:</strong> Rolling 1h/24h transaction count and amount per customer. Structured Streaming stateful aggregations with watermark.</li>
+      <li><strong>Model serving:</strong> MLflow model loaded once per streaming job, broadcast to all executors — not reloaded per batch.</li>
+      <li><strong>Fallback:</strong> If model unavailable, fall back to rule-based engine (velocity checks, amount threshold). No ML dependency in critical path.</li>
+      <li><strong>False positives:</strong> Score 0.7–0.8 → flag for human review. &gt;0.8 → block. Always store explanation features alongside score for audit.</li>
+    </ul></div>
+    <div class="iq-section"><h4>🎤 Spoken Answer</h4><div class="info-box purple"><div class="label">Say This</div>"The key tension is latency vs accuracy. I'd use Structured Streaming with 5-second trigger feeding into an MLflow model broadcast to all executors. Stateful aggregations compute rolling features using watermarking to handle late events. Model score determines soft flags vs hard blocks. The critical design: a fallback rule-based engine for model outages — the payment path never depends solely on ML availability."</div></div>
+  </div>
+</div>
+</div>
+
+<!-- QUIZ -->
+<div id="sec-quiz" class="section">
+<div class="sec-heading"><span class="icon">🧠</span>Quiz Practice</div>
+<p class="sec-sub">Click an option to answer, then reveal the explanation. Track your score.</p>
+<div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap">
+  <span style="font-size:13px;color:var(--text2)">Score:</span>
+  <span id="quizScore" style="font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--accent2)">0 / 0</span>
+  <button class="btn btn-secondary" onclick="resetQuiz()" style="font-size:12px;padding:6px 14px">Reset Quiz</button>
+</div>
+
+<div class="quiz-card" id="qz1">
+  <div class="quiz-q">1. You have a 500 GB Delta table with 10 million small files. Queries are very slow. What should you do first? <span class="quiz-diff hard">Hard</span></div>
+  <div class="quiz-options">
+    <div class="quiz-opt" onclick="answerQ('qz1',this,'wrong')"><span class="letter">A</span>Increase cluster size and retry the query</div>
+    <div class="quiz-opt" onclick="answerQ('qz1',this,'correct')"><span class="letter">B</span>Run OPTIMIZE to compact small files, then ZORDER by filter columns</div>
+    <div class="quiz-opt" onclick="answerQ('qz1',this,'wrong')"><span class="letter">C</span>Drop and recreate the table with correct partition columns</div>
+    <div class="quiz-opt" onclick="answerQ('qz1',this,'wrong')"><span class="letter">D</span>Enable Auto Loader to replace the ingestion pipeline</div>
+  </div>
+  <button class="reveal-btn" onclick="revealAnswer('qz1')">Reveal Explanation</button>
+  <div class="quiz-answer" id="ans-qz1">Small file problem is the #1 Delta performance issue. OPTIMIZE compacts files to ~1GB target. ZORDER co-locates related data for data skipping on filter columns. More cluster resources don't help when the driver is overwhelmed listing millions of files. Dropping the table is nuclear and unnecessary.</div>
+</div>
+
+<div class="quiz-card" id="qz2">
+  <div class="quiz-q">2. A streaming job's checkpoint directory is accidentally deleted. The job restarts. What happens? <span class="quiz-diff hard">Hard</span></div>
+  <div class="quiz-options">
+    <div class="quiz-opt" onclick="answerQ('qz2',this,'wrong')"><span class="letter">A</span>Spark resumes from where it left off using Event Hubs retention</div>
+    <div class="quiz-opt" onclick="answerQ('qz2',this,'wrong')"><span class="letter">B</span>Job fails immediately with checkpoint not found error</div>
+    <div class="quiz-opt" onclick="answerQ('qz2',this,'correct')"><span class="letter">C</span>Spark starts from the latest offset, potentially missing days of unprocessed data</div>
+    <div class="quiz-opt" onclick="answerQ('qz2',this,'wrong')"><span class="letter">D</span>Delta Lake automatically reconstructs the checkpoint from the transaction log</div>
+  </div>
+  <button class="reveal-btn" onclick="revealAnswer('qz2')">Reveal Explanation</button>
+  <div class="quiz-answer" id="ans-qz2">Without checkpoint, Spark cannot know which offsets were processed. By default it starts from LATEST, skipping all unprocessed data. Recovery options: restore checkpoint from backup (always back them up!), or replay from earliest offset with new checkpoint path and use MERGE to handle duplicates idempotently.</div>
+</div>
+
+<div class="quiz-card" id="qz3">
+  <div class="quiz-q">3. What is the key difference between SCD Type 2 and SCD Type 4? <span class="quiz-diff med">Medium</span></div>
+  <div class="quiz-options">
+    <div class="quiz-opt" onclick="answerQ('qz3',this,'wrong')"><span class="letter">A</span>Type 2 stores current + previous value; Type 4 stores only current</div>
+    <div class="quiz-opt" onclick="answerQ('qz3',this,'correct')"><span class="letter">B</span>Type 2 stores history in the same table with is_current flag; Type 4 separates current and history into two tables</div>
+    <div class="quiz-opt" onclick="answerQ('qz3',this,'wrong')"><span class="letter">C</span>Type 2 overwrites records; Type 4 inserts new rows</div>
+    <div class="quiz-opt" onclick="answerQ('qz3',this,'wrong')"><span class="letter">D</span>Type 4 is the hybrid of Type 1 + 2 + 3</div>
+  </div>
+  <button class="reveal-btn" onclick="revealAnswer('qz3')">Reveal Explanation</button>
+  <div class="quiz-answer" id="ans-qz3">Type 2: One table, multiple rows per entity (one per change), is_current/start_date/end_date columns. Type 4: Two tables — current table (fast lookups, always latest) and a separate history/audit table (append-only). Delta CDF naturally produces Type 4. Type 6 is the hybrid of 1+2+3.</div>
+</div>
+
+<div class="quiz-card" id="qz4">
+  <div class="quiz-q">4. Your PySpark job shows 1 executor running for 2 hours while others finish in 10 minutes. What is the most likely cause? <span class="quiz-diff hard">Hard</span></div>
+  <div class="quiz-options">
+    <div class="quiz-opt" onclick="answerQ('qz4',this,'correct')"><span class="letter">A</span>Data skew — one partition has significantly more records than others</div>
+    <div class="quiz-opt" onclick="answerQ('qz4',this,'wrong')"><span class="letter">B</span>The cluster auto-scaled down mid-job</div>
+    <div class="quiz-opt" onclick="answerQ('qz4',this,'wrong')"><span class="letter">C</span>The shuffle.partitions config is set too low</div>
+    <div class="quiz-opt" onclick="answerQ('qz4',this,'wrong')"><span class="letter">D</span>Python UDFs are causing garbage collection pressure</div>
+  </div>
+  <button class="reveal-btn" onclick="revealAnswer('qz4')">Reveal Explanation</button>
+  <div class="quiz-answer" id="ans-qz4">One executor running 12x longer = classic data skew. One partition has a hot key with far more records. Fix: Enable AQE skew join optimization (automatic, no code change). If still skewed, use salting: add random salt 0–9 to join key on both sides (explode right side). This distributes one hot partition into 10 balanced ones.</div>
+</div>
+
+<div class="quiz-card" id="qz5">
+  <div class="quiz-q">5. withWatermark("event_time", "15 minutes") — what exactly does this mean? <span class="quiz-diff med">Medium</span></div>
+  <div class="quiz-options">
+    <div class="quiz-opt" onclick="answerQ('qz5',this,'wrong')"><span class="letter">A</span>The job processes a batch every 15 minutes</div>
+    <div class="quiz-opt" onclick="answerQ('qz5',this,'wrong')"><span class="letter">B</span>Events older than 15 minutes are immediately dropped from the stream</div>
+    <div class="quiz-opt" onclick="answerQ('qz5',this,'correct')"><span class="letter">C</span>Spark waits up to 15 min beyond the max event_time seen before closing a window and discarding late arrivals</div>
+    <div class="quiz-opt" onclick="answerQ('qz5',this,'wrong')"><span class="letter">D</span>The checkpoint is flushed to ADLS every 15 minutes</div>
+  </div>
+  <button class="reveal-btn" onclick="revealAnswer('qz5')">Reveal Explanation</button>
+  <div class="quiz-answer" id="ans-qz5">Watermark = max(event_time_seen) - watermark_duration. Events with event_time &lt; this threshold are late and dropped (or handled separately). This enables Spark to safely free state memory for closed windows. Trigger interval is separate — set via .trigger(processingTime="30 seconds"). These are independent settings.</div>
+</div>
+
+<div class="quiz-card" id="qz6">
+  <div class="quiz-q">6. When should you use Liquid Clustering instead of Z-Ordering in Delta Lake? <span class="quiz-diff med">Medium</span></div>
+  <div class="quiz-options">
+    <div class="quiz-opt" onclick="answerQ('qz6',this,'wrong')"><span class="letter">A</span>When your table is smaller than 100 GB</div>
+    <div class="quiz-opt" onclick="answerQ('qz6',this,'wrong')"><span class="letter">B</span>When you need to cluster on more than one column</div>
+    <div class="quiz-opt" onclick="answerQ('qz6',this,'correct')"><span class="letter">C</span>For large tables with frequent data updates where full Z-Order OPTIMIZE is too slow to run regularly</div>
+    <div class="quiz-opt" onclick="answerQ('qz6',this,'wrong')"><span class="letter">D</span>Liquid Clustering and Z-Ordering are identical — either works the same</div>
+  </div>
+  <button class="reveal-btn" onclick="revealAnswer('qz6')">Reveal Explanation</button>
+  <div class="quiz-answer" id="ans-qz6">Z-Ordering requires a full OPTIMIZE run that gets more expensive as the table grows. At PB scale it can take hours. Liquid Clustering (Databricks 13.3+) incrementally re-clusters only files that need it as a background operation — much more practical for large, frequently-updated tables. For smaller stable tables, Z-Order still works great.</div>
+</div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="sec-flashcards" class="section">
+<div class="sec-heading"><span class="icon">🃏</span>Flashcards</div>
+<p class="sec-sub">Click any card to flip it and reveal the answer. Review before your interview.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:12px">
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Concept</div><div class="fc-content">What is Delta Lake's Write-Ahead Log (WAL)?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Answer</div><div class="fc-content">JSON transaction log in _delta_log/. Records every operation (add/remove files, schema changes). Enables ACID, time travel, audit. Every commit = one JSON file. Checkpoint every 10 commits to compact history.</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Interview Tip</div><div class="fc-content">How do you answer: "How would you handle late-arriving data?"</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Framework</div><div class="fc-content">1) Define lateness tolerance SLA. 2) Streaming: withWatermark(). 3) Batch: replaceWhere to reprocess affected partitions. 4) Alert on late data volume exceeding threshold. Always ask: "How late is acceptable?"</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Concept</div><div class="fc-content">What is Unity Catalog and why does it matter for enterprise?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Answer</div><div class="fc-content">Unified governance for Databricks. Column-level security, row-level filters, data lineage, audit logs, cross-workspace access, Delta Sharing. Hierarchy: Catalog → Schema → Table/View/Volume. Critical for GDPR, HIPAA, SOC2 compliance.</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Concept</div><div class="fc-content">Z-Ordering vs Liquid Clustering — when to use each?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Answer</div><div class="fc-content">Z-Order: Manual, full-table sort on each OPTIMIZE run. Great for stable, smaller tables. Liquid Clustering: Automatic, incremental, background. Better for large, frequently-updated tables (PB scale). Use Liquid for new large tables.</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Interview Tip</div><div class="fc-content">How do you ensure exactly-once in Structured Streaming?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Formula</div><div class="fc-content">Exactly-once = Checkpointing + Idempotent Sink. Checkpoint = processed offsets saved to ADLS (at-least-once source). Idempotent sink = Delta ACID + MERGE ensures same result whether written once or many times.</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Concept</div><div class="fc-content">Snowflake vs Databricks SQL — when to pick each?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Answer</div><div class="fc-content">Snowflake: Complex SQL, cross-DB queries, many concurrent BI users, non-Databricks consumers, automatic clustering. Databricks SQL: Already on Delta Lake, ML+SQL same platform, Serverless for cost efficiency, Unity Catalog governance parity.</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Interview Tip</div><div class="fc-content">What questions do you ask before designing any data pipeline?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Checklist</div><div class="fc-content">Volume (GB/day), Velocity (events/s), Latency SLA, Consumer types (BI/ML/API), Compliance (GDPR?), Budget sensitivity, Team size/skills, Retention period, Consistency requirement (strong vs eventual).</div></div>
+</div></div></div>
+
+<div><div class="flashcard-wrap" onclick="flipCard(this)"><div class="flashcard">
+  <div class="fc-front"><div class="fc-label">Concept</div><div class="fc-content">What is the Medallion Architecture?</div><div class="fc-hint">Click to flip →</div></div>
+  <div class="fc-back"><div class="fc-label">Answer</div><div class="fc-content">Bronze: Raw, immutable, as-is from source. Silver: Cleaned, validated, deduplicated, conformed schemas. Gold: Business-level aggregates, star schema, serving layer. Each layer adds quality. Movement is one-way (no writing back upstream).</div></div>
+</div></div></div>
+
+</div>
+</div>
+
+<!-- MOCK INTERVIEW -->
+<div id="sec-mock" class="section">
+<div class="sec-heading"><span class="icon">🎙️</span>Mock Interview Mode</div>
+<p class="sec-sub">Get a random question, set your 30-minute timer, answer out loud, then reveal the framework.</p>
+<div class="mock-box">
+  <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Current Question</div>
+  <div class="mock-q" id="mockQ">Press "New Question" to begin your mock interview session.</div>
+  <div class="mock-timer" id="mockTimer">30:00</div>
+  <div class="mock-controls">
+    <button class="btn btn-primary" onclick="newMockQ()">New Question</button>
+    <button class="btn btn-secondary" onclick="startTimer()">▶ Start Timer</button>
+    <button class="btn btn-danger" onclick="stopTimer()">■ Stop</button>
+    <button class="btn btn-success" onclick="document.getElementById('mockAnswer').style.display='block'">Show Framework</button>
+  </div>
+</div>
+<div id="mockAnswer" style="display:none">
+  <div class="sec-heading" style="font-size:16px"><span class="icon">📋</span>Answer Framework (30 min)</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Clarify (3–5 min)</div><div class="step-desc">Scale, latency SLA, consumers, compliance, budget, team size. Ask before drawing anything. Interviewers explicitly score this.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Estimate (2 min)</div><div class="step-desc">GB/day, events/s, partitions needed, cluster size, storage cost. Shows architectural maturity. Numbers anchor your design decisions.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">High-Level Architecture (5 min)</div><div class="step-desc">Draw source → ingestion → processing → storage → serving. Name Azure/Databricks services at each layer. Medallion if applicable.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Deep Dive — 1–2 Hard Problems (10 min)</div><div class="step-desc">Pick the hardest design challenges (exactly-once, late data, multi-tenant isolation, SCD Type 2). Go deep here. This is where senior candidates differentiate.</div></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Tradeoffs, Failures & Monitoring (5 min)</div><div class="step-desc">Name failure modes proactively. Describe monitoring strategy (DQ metrics, freshness alerts). What changes at 10x scale?</div></div></div>
+  </div>
+  <div class="info-box tip"><div class="label">Things to AVOID</div>Jumping to architecture before clarifying. Picking a solution without stating the tradeoff. Not mentioning failure scenarios. Never saying "it depends" without following up with what it depends ON and what you'd choose given specific constraints.</div>
+</div>
+</div>
+
+</div><!-- end content -->
+</div><!-- end main -->
+<script>
+mermaid.initialize({startOnLoad:true,theme:'dark',themeVariables:{primaryColor:'#1a1a2e',primaryTextColor:'#e2e2f0',primaryBorderColor:'#6c63ff',lineColor:'#6c63ff',secondaryColor:'#0a0a0f',tertiaryColor:'#111118'}});
+
+const sections=['home','fundamentals','batch','streaming','scd','dq','backfill','cluster','perf','estimation','interview','quiz','flashcards','mock'];
+const titles={home:'Home & Overview',fundamentals:'Fundamentals',batch:'Batch Processing',streaming:'Streaming Processing',scd:'SCD Types (0–6)',dq:'Data Quality',backfill:'Backfill Strategies',cluster:'Cluster Design',perf:'Performance Optimization',estimation:'Estimations',interview:'10 System Design Questions',quiz:'Quiz Practice',flashcards:'Flashcards',mock:'Mock Interview Mode'};
+const visited=new Set(['home']);
+
+function showSection(id){
+  sections.forEach(s=>{const el=document.getElementById('sec-'+s);if(el)el.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
+  document.getElementById('topbarTitle').textContent=titles[id]||id;
+  visited.add(id);
+  const pct=Math.round((visited.size/sections.length)*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=visited.size+' of '+sections.length+' sections visited';
+  window.scrollTo(0,0);
+  setTimeout(()=>mermaid.run(),150);
+}
+
+function switchTab(btn,panelId){
+  const container=btn.closest('.tabs').parentElement;
+  container.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel=document.getElementById(panelId);
+  if(panel)panel.classList.add('active');
+  setTimeout(()=>mermaid.run(),100);
+}
+
+function toggleCollapse(header){
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+function toggleIQ(header){
+  const body=header.nextElementSibling;
+  const arrow=header.querySelector('span:last-child');
+  if(body.classList.contains('open')){body.classList.remove('open');arrow.textContent='▼';}
+  else{body.classList.add('open');arrow.textContent='▲';setTimeout(()=>mermaid.run(),100);}
+}
+
+function flipCard(wrap){wrap.querySelector('.flashcard').classList.toggle('flipped');}
+
+let quizTotal=0,quizCorrect=0;
+function answerQ(qId,el,result){
+  const card=document.getElementById(qId);
+  if(card.dataset.answered)return;
+  card.dataset.answered='1';
+  card.querySelectorAll('.quiz-opt').forEach(o=>o.style.pointerEvents='none');
+  el.classList.add(result);
+  quizTotal++;if(result==='correct')quizCorrect++;
+  document.getElementById('quizScore').textContent=quizCorrect+' / '+quizTotal;
+}
+function revealAnswer(qId){
+  const ans=document.getElementById('ans-'+qId);
+  ans.style.display=ans.style.display==='block'?'none':'block';
+}
+function resetQuiz(){
+  quizTotal=0;quizCorrect=0;
+  document.getElementById('quizScore').textContent='0 / 0';
+  document.querySelectorAll('.quiz-card').forEach(c=>{
+    delete c.dataset.answered;
+    c.querySelectorAll('.quiz-opt').forEach(o=>{o.classList.remove('correct','wrong');o.style.pointerEvents='';});
+    c.querySelectorAll('.quiz-answer').forEach(a=>a.style.display='none');
+  });
+}
+
+const mockQs=[
+  "Design a real-time fraud detection pipeline processing 50,000 transactions per second on Azure Databricks.",
+  "Your Delta table has 100 million small files causing query timeouts. Walk me through your complete remediation plan.",
+  "Design a multi-tenant data platform for 500 enterprise customers with strict data isolation requirements.",
+  "Implement SCD Type 2 for a customer dimension table with 1 billion rows using Delta Lake MERGE.",
+  "Design an end-to-end CDC pipeline from Oracle on-premises to a Gold layer on Azure Databricks.",
+  "Your streaming job is 3 hours behind. What are the possible causes and how do you recover without data loss?",
+  "Design a backfill strategy to reload 2 years of historical data into a production Medallion lakehouse without downtime.",
+  "How would you architect a data quality monitoring system covering 200 Delta tables with different SLAs?",
+  "Design a petabyte-scale event analytics pipeline for a telco processing 1 billion IoT events per day.",
+  "Walk me through the full architecture of a reporting platform for 10,000 Power BI users on Azure."
+];
+
+function newMockQ(){
+  document.getElementById('mockQ').textContent=mockQs[Math.floor(Math.random()*mockQs.length)];
+  document.getElementById('mockAnswer').style.display='none';
+  resetTimerUI();
+}
+
+let timerInterval=null,timerSeconds=1800;
+function resetTimerUI(){clearInterval(timerInterval);timerInterval=null;timerSeconds=1800;updateTimerDisplay();document.getElementById('mockTimer').className='mock-timer';}
+function updateTimerDisplay(){const m=Math.floor(timerSeconds/60),s=timerSeconds%60;document.getElementById('mockTimer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function startTimer(){
+  if(timerInterval)return;
+  timerInterval=setInterval(()=>{
+    timerSeconds--;updateTimerDisplay();
+    const el=document.getElementById('mockTimer');
+    if(timerSeconds<=300)el.className='mock-timer warning';
+    if(timerSeconds<=120)el.className='mock-timer danger';
+    if(timerSeconds<=0){clearInterval(timerInterval);timerInterval=null;el.textContent='TIME UP';}
+  },1000);
+}
+function stopTimer(){clearInterval(timerInterval);timerInterval=null;resetTimerUI();}
+
+function filterNav(val){
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    const s=item.getAttribute('data-search')||'';
+    item.style.display=(!val||s.includes(val.toLowerCase()))?'':'none';
+  });
+}
+</script>
+</body>
+</html>

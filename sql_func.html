@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Databricks SQL Functions Reference</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap');
+:root{--bg:#07070d;--bg2:#0f0f18;--bg3:#161622;--bg4:#1e1e2e;--border:#252535;--border2:#353550;--accent:#7c6af7;--accent2:#a78bfa;--accent3:#34d399;--accent4:#fbbf24;--accent5:#f87171;--accent6:#38bdf8;--text:#ddddf5;--text2:#8888aa;--text3:#4a4a6a;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.7;display:flex;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* SIDEBAR */
+#sidebar{width:270px;min-width:270px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100}
+.logo{padding:18px 16px 12px;border-bottom:1px solid var(--border)}
+.logo h1{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--accent2);line-height:1.4}
+.logo p{font-size:11px;color:var(--text3);margin-top:2px}
+.search-wrap{padding:10px 12px 6px;position:relative}
+.search-wrap input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px 7px 28px;color:var(--text);font-size:12px;outline:none;font-family:'Inter',sans-serif}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap::before{content:'🔍';position:absolute;left:18px;top:17px;font-size:11px}
+.cat-label{font-size:9.5px;font-weight:700;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;padding:8px 16px 2px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:6px 16px;cursor:pointer;font-size:12px;color:var(--text2);border-left:2px solid transparent;transition:all .12s}
+.nav-item:hover{color:var(--text);background:var(--bg3)}
+.nav-item.active{color:var(--accent2);border-left-color:var(--accent2);background:rgba(124,106,247,.07)}
+.nav-item .ni{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.count-badge{margin-left:auto;font-size:9px;background:var(--bg4);color:var(--text3);padding:1px 6px;border-radius:10px}
+
+/* MAIN */
+#main{margin-left:270px;flex:1;overflow-x:hidden}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(7,7,13,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:11px 32px;display:flex;align-items:center;gap:12px}
+.topbar-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text)}
+.topbar-tags{display:flex;gap:6px;margin-left:auto}
+.tag{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:600}
+.tag-blue{background:rgba(56,189,248,.15);color:var(--accent6);border:1px solid rgba(56,189,248,.25)}
+.tag-purple{background:rgba(124,106,247,.15);color:var(--accent2);border:1px solid rgba(124,106,247,.25)}
+.content{padding:28px 32px;max-width:980px}
+
+/* SECTIONS */
+.section{display:none;animation:fi .3s ease}
+.section.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.sec-desc{color:var(--text2);font-size:13px;margin-bottom:24px;line-height:1.7}
+
+/* FUNCTION CARD */
+.fn-grid{display:flex;flex-direction:column;gap:18px}
+.fn-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s}
+.fn-card:hover{border-color:var(--border2)}
+.fn-header{padding:14px 18px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;background:var(--bg3);transition:background .15s}
+.fn-header:hover{background:var(--bg4)}
+.fn-name{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--accent2)}
+.fn-sig{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-top:2px}
+.fn-tag{font-size:10px;padding:2px 8px;border-radius:12px;font-weight:600;white-space:nowrap;margin-top:2px}
+.ft-null{background:rgba(248,113,113,.15);color:var(--accent5);border:1px solid rgba(248,113,113,.2)}
+.ft-agg{background:rgba(52,211,153,.15);color:var(--accent3);border:1px solid rgba(52,211,153,.2)}
+.ft-str{background:rgba(56,189,248,.15);color:var(--accent6);border:1px solid rgba(56,189,248,.2)}
+.ft-date{background:rgba(251,191,36,.15);color:var(--accent4);border:1px solid rgba(251,191,36,.2)}
+.ft-arr{background:rgba(167,139,250,.15);color:var(--accent2);border:1px solid rgba(167,139,250,.2)}
+.ft-cond{background:rgba(124,106,247,.15);color:#c4b5fd;border:1px solid rgba(124,106,247,.2)}
+.ft-win{background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.2)}
+.ft-cast{background:rgba(249,115,22,.15);color:#fdba74;border:1px solid rgba(249,115,22,.2)}
+.fn-arrow{color:var(--text3);font-size:12px;transition:transform .25s;margin-left:12px;flex-shrink:0;margin-top:4px}
+.fn-header.open .fn-arrow{transform:rotate(180deg)}
+.fn-body{display:none;padding:18px;border-top:1px solid var(--border);background:var(--bg)}
+.fn-body.open{display:block}
+.fn-desc{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.7}
+.fn-syntax{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent4);margin-bottom:14px}
+.fn-params{margin-bottom:14px}
+.fn-params h4{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.param-row{display:flex;gap:12px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+.param-row:last-child{border-bottom:none}
+.param-name{font-family:'JetBrains Mono',monospace;color:var(--accent2);min-width:140px;flex-shrink:0}
+.param-desc{color:var(--text2)}
+pre{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;margin:10px 0}
+.kw{color:#c792ea}.str{color:#c3e88d}.cm{color:#546e7a;font-style:italic}.fn2{color:#82aaff}.num{color:#f78c6c}.op{color:#89ddff}.ret{color:#34d399}
+.result-row{display:flex;gap:0;margin-top:10px}
+.result-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1}
+.result-box .rl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.result-box .rv{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent3)}
+.result-row .result-box+.result-box{margin-left:10px}
+.info-box{border-radius:8px;padding:12px 14px;margin:12px 0;border-left:3px solid;font-size:12.5px;line-height:1.7}
+.info-box.tip{background:rgba(52,211,153,.07);border-color:var(--accent3);color:var(--text2)}
+.info-box.tip .lb{color:var(--accent3);font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:3px}
+.info-box.warn{background:rgba(251,191,36,.07);border-color:var(--accent4);color:var(--text2)}
+.info-box.warn .lb{color:var(--accent4);font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:3px}
+.info-box.note{background:rgba(124,106,247,.07);border-color:var(--accent);color:var(--text2)}
+.info-box.note .lb{color:var(--accent2);font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:3px}
+
+/* COMPARISON TABLE */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12.5px}
+th{background:var(--bg3);padding:9px 14px;text-align:left;font-weight:600;color:var(--text);border-bottom:1px solid var(--border2);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+.td-g{color:var(--accent3)}.td-r{color:var(--accent5)}.td-y{color:var(--accent4)}
+code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--bg3);padding:1px 5px;border-radius:4px;color:var(--accent2)}
+h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin:18px 0 8px}
+p{color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:8px}
+strong{color:var(--text);font-weight:600}
+.hero{background:linear-gradient(135deg,rgba(124,106,247,.12) 0%,rgba(52,211,153,.06) 100%);border:1px solid rgba(124,106,247,.25);border-radius:14px;padding:28px;margin-bottom:24px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(rgba(124,106,247,.12),transparent 70%)}
+.hero h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px}
+.hero p{color:var(--text2);font-size:13px;max-width:560px}
+.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);background:var(--bg3)}
+.fn-count{display:inline-flex;align-items:center;justify-content:center;background:rgba(124,106,247,.2);color:var(--accent2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;margin-left:8px}
+@media(max-width:768px){#sidebar{display:none}#main{margin-left:0}.content{padding:16px}}
+</style>
+</head>
+<body>
+<nav id="sidebar">
+  <div class="logo">
+    <h1>⚡ Databricks SQL<br>Functions Reference</h1>
+    <p>Production-ready examples · All categories</p>
+  </div>
+  <div class="search-wrap"><input type="text" placeholder="Search functions..." oninput="filterFns(this.value)"></div>
+  <div id="navItems">
+    <div class="cat-label">Overview</div>
+    <div class="nav-item active" onclick="showSec('home')" data-s="home"><span class="ni">🏠</span>Home<span class="count-badge">All</span></div>
+    <div class="cat-label">Null Handling</div>
+    <div class="nav-item" onclick="showSec('null')" data-s="null ifnull nvl coalesce nullif nullifzero"><span class="ni" style="background:rgba(248,113,113,.15)">🚫</span>Null Handling<span class="count-badge">5</span></div>
+    <div class="cat-label">String Functions</div>
+    <div class="nav-item" onclick="showSec('str')" data-s="string concat substring trim upper lower replace regexp split length"><span class="ni" style="background:rgba(56,189,248,.15)">🔤</span>String Functions<span class="count-badge">10</span></div>
+    <div class="cat-label">Date & Time</div>
+    <div class="nav-item" onclick="showSec('date')" data-s="date time date_part datediff date_add datetrunc to_date current_date months_between"><span class="ni" style="background:rgba(251,191,36,.15)">📅</span>Date & Time<span class="count-badge">8</span></div>
+    <div class="cat-label">Aggregate</div>
+    <div class="nav-item" onclick="showSec('agg')" data-s="aggregate collect_set collect_list count_if percentile approx_count_distinct grouping_sets rollup cube"><span class="ni" style="background:rgba(52,211,153,.15)">📊</span>Aggregate<span class="count-badge">8</span></div>
+    <div class="cat-label">Window Functions</div>
+    <div class="nav-item" onclick="showSec('win')" data-s="window row_number rank dense_rank lag lead first_value last_value ntile"><span class="ni" style="background:rgba(16,185,129,.15)">🪟</span>Window Functions<span class="count-badge">8</span></div>
+    <div class="cat-label">Array & Map</div>
+    <div class="nav-item" onclick="showSec('arr')" data-s="array map transform filter explode array_contains flatten zip_with element_at"><span class="ni" style="background:rgba(167,139,250,.15)">🗂️</span>Array & Map<span class="count-badge">8</span></div>
+    <div class="cat-label">Conditional</div>
+    <div class="nav-item" onclick="showSec('cond')" data-s="conditional case when if iff decode greatest least"><span class="ni" style="background:rgba(124,106,247,.15)">🔀</span>Conditional<span class="count-badge">6</span></div>
+    <div class="cat-label">Type & Cast</div>
+    <div class="nav-item" onclick="showSec('cast')" data-s="cast try_cast typeof try_divide"><span class="ni" style="background:rgba(249,115,22,.15)">🔄</span>Type & Cast<span class="count-badge">4</span></div>
+    <div class="cat-label">JSON & Semi-Struct</div>
+    <div class="nav-item" onclick="showSec('json')" data-s="json get_json_object from_json to_json json_tuple schema_of_json"><span class="ni" style="background:rgba(56,189,248,.15)">{ }</span>JSON Functions<span class="count-badge">5</span></div>
+    <div class="cat-label">Cheat Sheet</div>
+    <div class="nav-item" onclick="showSec('cheat')" data-s="cheat sheet reference quick"><span class="ni">📋</span>Quick Reference</div>
+  </div>
+</nav>
+
+<div id="main">
+<div class="topbar">
+  <span class="topbar-title" id="topTitle">Home</span>
+  <div class="topbar-tags">
+    <span class="tag tag-blue">Databricks SQL</span>
+    <span class="tag tag-purple">Delta Lake</span>
+  </div>
+</div>
+<div class="content">
+
+<!-- HOME -->
+<div id="sec-home" class="section active">
+<div class="hero">
+  <h2>Databricks SQL Functions Reference</h2>
+  <p>Every function you need for production data pipelines — with real examples, edge cases, output values, and interview tips. Covers Delta Lake, Medallion architecture, PySpark SQL context.</p>
+  <div class="pill-row">
+    <span class="pill">🚫 Null Handling</span><span class="pill">🔤 String</span><span class="pill">📅 Date & Time</span><span class="pill">📊 Aggregate</span><span class="pill">🪟 Window</span><span class="pill">🗂️ Array & Map</span><span class="pill">🔀 Conditional</span><span class="pill">🔄 Type & Cast</span><span class="pill">{ } JSON</span>
+  </div>
+</div>
+<h3>Function Categories</h3>
+<table>
+  <tr><th>Category</th><th>Key Functions</th><th>Common Use</th></tr>
+  <tr><td>🚫 Null Handling</td><td><code>IFNULL</code> <code>NVL</code> <code>COALESCE</code> <code>NULLIF</code></td><td>Replace NULLs in Bronze→Silver transforms</td></tr>
+  <tr><td>🔤 String</td><td><code>CONCAT</code> <code>SUBSTRING</code> <code>REGEXP_EXTRACT</code> <code>SPLIT</code></td><td>Parsing raw strings, building display keys</td></tr>
+  <tr><td>📅 Date & Time</td><td><code>DATE_PART</code> <code>DATEDIFF</code> <code>DATE_TRUNC</code> <code>DATE_ADD</code></td><td>Time-based partitioning, SLA calculations</td></tr>
+  <tr><td>📊 Aggregate</td><td><code>COLLECT_SET</code> <code>COLLECT_LIST</code> <code>COUNT_IF</code> <code>PERCENTILE</code></td><td>Gold layer rollups, feature engineering</td></tr>
+  <tr><td>🪟 Window</td><td><code>ROW_NUMBER</code> <code>LAG</code> <code>LEAD</code> <code>RANK</code></td><td>SCD Type 2, deduplication, running totals</td></tr>
+  <tr><td>🗂️ Array & Map</td><td><code>TRANSFORM</code> <code>FILTER</code> <code>EXPLODE</code> <code>ARRAY_CONTAINS</code></td><td>Semi-structured Bronze data normalization</td></tr>
+  <tr><td>🔀 Conditional</td><td><code>CASE WHEN</code> <code>IFF</code> <code>DECODE</code> <code>GREATEST</code></td><td>Business rule encoding, status flags</td></tr>
+  <tr><td>🔄 Cast</td><td><code>CAST</code> <code>TRY_CAST</code> <code>TRY_DIVIDE</code></td><td>Safe type coercion in Silver layer</td></tr>
+  <tr><td>{ } JSON</td><td><code>GET_JSON_OBJECT</code> <code>FROM_JSON</code> <code>TO_JSON</code></td><td>Parsing Event Hubs payloads</td></tr>
+</table>
+<div class="info-box note"><div class="lb">Pro Tip</div>In Databricks SQL, all functions work identically in <code>spark.sql()</code>, SQL notebooks, Delta Live Tables, and Databricks SQL Warehouses. PySpark column equivalents are noted throughout.</div>
+</div>
+
+<!-- NULL HANDLING -->
+<div id="sec-null" class="section">
+<div class="sec-title">🚫 Null Handling Functions<span class="fn-count">5 functions</span></div>
+<div class="sec-desc">Essential for Bronze → Silver transforms. NULL values from source systems can silently break aggregations, joins, and reports. These functions make NULL handling explicit.</div>
+<div class="fn-grid">
+
+<div class="fn-card" id="fn-ifnull">
+<div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">IFNULL</div><div class="fn-sig">IFNULL(expr, replacement)</div><div class="fn-tag ft-null">Null Handling</div></div>
+  <span class="fn-arrow">▼</span>
+</div>
+<div class="fn-body">
+  <div class="fn-desc">Returns <strong>replacement</strong> if <strong>expr</strong> is NULL, otherwise returns <strong>expr</strong>. Two-argument simplification of COALESCE. Identical to NVL in Oracle/Snowflake.</div>
+  <div class="fn-syntax">IFNULL(expr, replacement)</div>
+  <pre><span class="cm">-- Replace NULL discount with 0</span>
+<span class="kw">SELECT</span> 
+  order_id,
+  <span class="fn2">IFNULL</span>(discount, <span class="num">0</span>)           <span class="kw">AS</span> discount_clean,
+  <span class="fn2">IFNULL</span>(delivery_notes, <span class="str">'N/A'</span>) <span class="kw">AS</span> notes_clean
+<span class="kw">FROM</span> bronze.orders;
+
+<span class="cm">-- Practical: safe division</span>
+<span class="kw">SELECT</span> revenue / <span class="fn2">IFNULL</span>(NULLIF(units, <span class="num">0</span>), <span class="num">1</span>) <span class="kw">AS</span> revenue_per_unit
+<span class="kw">FROM</span> sales;</pre>
+  <div class="result-row">
+    <div class="result-box"><div class="rl">Input</div><div class="rv">IFNULL(NULL, 0)</div></div>
+    <div class="result-box"><div class="rl">Output</div><div class="rv" style="color:var(--accent3)">0</div></div>
+    <div class="result-box"><div class="rl">Input</div><div class="rv">IFNULL(5, 0)</div></div>
+    <div class="result-box"><div class="rl">Output</div><div class="rv" style="color:var(--accent3)">5</div></div>
+  </div>
+  <div class="info-box tip"><div class="lb">PySpark Equivalent</div><code>F.when(F.col("discount").isNull(), 0).otherwise(F.col("discount"))</code> or <code>F.coalesce(F.col("discount"), F.lit(0))</code></div>
+</div>
+</div>
+
+<div class="fn-card" id="fn-nvl">
+<div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">NVL / NVL2</div><div class="fn-sig">NVL(expr, replacement) | NVL2(expr, not_null_val, null_val)</div><div class="fn-tag ft-null">Null Handling</div></div>
+  <span class="fn-arrow">▼</span>
+</div>
+<div class="fn-body">
+  <div class="fn-desc"><strong>NVL</strong> is identical to IFNULL — returns replacement if NULL. <strong>NVL2</strong> is more powerful: returns one value if NOT NULL, another if NULL. Great for status labels.</div>
+<pre><span class="cm">-- NVL: same as IFNULL</span>
+<span class="kw">SELECT</span> <span class="fn2">NVL</span>(email, <span class="str">'no-email@unknown.com'</span>) <span class="kw">AS</span> email_safe <span class="kw">FROM</span> customers;
+
+<span class="cm">-- NVL2: different value for null vs not-null</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">NVL2</span>(cancelled_at, <span class="str">'CANCELLED'</span>, <span class="str">'ACTIVE'</span>) <span class="kw">AS</span> status,
+  <span class="fn2">NVL2</span>(promo_code, <span class="str">'Promo: '</span> || promo_code, <span class="str">'No Promo'</span>) <span class="kw">AS</span> promo_label
+<span class="kw">FROM</span> orders;</pre>
+  <div class="result-row">
+    <div class="result-box"><div class="rl">NVL2(NULL,'Y','N')</div><div class="rv">N</div></div>
+    <div class="result-box"><div class="rl">NVL2('val','Y','N')</div><div class="rv" style="color:var(--accent3)">Y</div></div>
+  </div>
+</div>
+</div>
+
+<div class="fn-card" id="fn-coalesce">
+<div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">COALESCE</div><div class="fn-sig">COALESCE(expr1, expr2, ..., exprN)</div><div class="fn-tag ft-null">Null Handling</div></div>
+  <span class="fn-arrow">▼</span>
+</div>
+<div class="fn-body">
+  <div class="fn-desc">Returns the first non-NULL value from a list. The most powerful and flexible null-handling function. Evaluates left to right, short-circuits on first non-NULL. Handles any number of fallback expressions.</div>
+  <div class="fn-syntax">COALESCE(primary, fallback1, fallback2, ..., 'default')</div>
+<pre><span class="cm">-- Multi-source address resolution</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">COALESCE</span>(billing_email, shipping_email, account_email, <span class="str">'unknown@co.com'</span>) <span class="kw">AS</span> contact_email,
+  <span class="fn2">COALESCE</span>(override_price, promo_price, regular_price, <span class="num">0</span>) <span class="kw">AS</span> final_price
+<span class="kw">FROM</span> orders;
+
+<span class="cm">-- Safe aggregate: treat NULL as 0</span>
+<span class="kw">SELECT</span> <span class="fn2">SUM</span>(<span class="fn2">COALESCE</span>(amount, <span class="num">0</span>)) <span class="kw">AS</span> total <span class="kw">FROM</span> transactions;
+
+<span class="cm">-- SCD Type 2: use new value or keep existing</span>
+<span class="kw">SELECT</span> <span class="fn2">COALESCE</span>(s.city, t.city) <span class="kw">AS</span> city_resolved
+<span class="kw">FROM</span> target t <span class="kw">LEFT JOIN</span> source s <span class="kw">ON</span> t.id = s.id;</pre>
+  <div class="info-box tip"><div class="lb">vs IFNULL</div>COALESCE accepts 2+ args; IFNULL is exactly 2. Use COALESCE when you have multiple fallback sources. Both are ANSI SQL standard.</div>
+</div>
+</div>
+
+<div class="fn-card" id="fn-nullif">
+<div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">NULLIF</div><div class="fn-sig">NULLIF(expr, comparand)</div><div class="fn-tag ft-null">Null Handling</div></div>
+  <span class="fn-arrow">▼</span>
+</div>
+<div class="fn-body">
+  <div class="fn-desc">Returns NULL if <strong>expr = comparand</strong>, otherwise returns <strong>expr</strong>. The inverse of IFNULL. Most commonly used to prevent division-by-zero errors or to convert sentinel values (empty strings, 0, -1) to NULL.</div>
+<pre><span class="cm">-- Prevent division by zero</span>
+<span class="kw">SELECT</span> revenue / <span class="fn2">NULLIF</span>(units_sold, <span class="num">0</span>) <span class="kw">AS</span> revenue_per_unit <span class="kw">FROM</span> sales;
+
+<span class="cm">-- Convert empty string sentinel to NULL (common in CSV ingestion)</span>
+<span class="kw">SELECT</span> <span class="fn2">NULLIF</span>(phone_number, <span class="str">''</span>) <span class="kw">AS</span> phone_clean <span class="kw">FROM</span> bronze.contacts;
+
+<span class="cm">-- Convert -1 sentinel to NULL</span>
+<span class="kw">SELECT</span> <span class="fn2">NULLIF</span>(error_code, <span class="num">-1</span>) <span class="kw">AS</span> error_code_clean <span class="kw">FROM</span> events;
+
+<span class="cm">-- Combine with COALESCE for full null pipeline</span>
+<span class="kw">SELECT</span> <span class="fn2">COALESCE</span>(<span class="fn2">NULLIF</span>(raw_value, <span class="str">'N/A'</span>), <span class="str">'unknown'</span>) <span class="kw">AS</span> clean_val <span class="kw">FROM</span> bronze;</pre>
+  <div class="result-row">
+    <div class="result-box"><div class="rl">NULLIF(5, 0)</div><div class="rv" style="color:var(--accent3)">5</div></div>
+    <div class="result-box"><div class="rl">NULLIF(0, 0)</div><div class="rv" style="color:var(--accent5)">NULL</div></div>
+    <div class="result-box"><div class="rl">NULLIF('', '')</div><div class="rv" style="color:var(--accent5)">NULL</div></div>
+  </div>
+</div>
+</div>
+
+<div class="fn-card" id="fn-isnotnull">
+<div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">IS NULL / IS NOT NULL</div><div class="fn-sig">expr IS NULL | expr IS NOT NULL</div><div class="fn-tag ft-null">Null Handling</div></div>
+  <span class="fn-arrow">▼</span>
+</div>
+<div class="fn-body">
+  <div class="fn-desc">Boolean predicates for null checks. The ONLY correct way to test for NULL — never use <code>= NULL</code> (always returns NULL/false). Essential for DQ checks and filter conditions.</div>
+<pre><span class="cm">-- DQ check: count nulls per column</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">COUNT</span>(*) <span class="kw">AS</span> total,
+  <span class="fn2">COUNT_IF</span>(customer_id <span class="kw">IS NULL</span>) <span class="kw">AS</span> null_customer_id,
+  <span class="fn2">COUNT_IF</span>(email <span class="kw">IS NULL</span>) <span class="kw">AS</span> null_email,
+  <span class="fn2">ROUND</span>(<span class="fn2">COUNT_IF</span>(email <span class="kw">IS NULL</span>) * <span class="num">100.0</span> / <span class="fn2">COUNT</span>(*), <span class="num">2</span>) <span class="kw">AS</span> email_null_pct
+<span class="kw">FROM</span> silver.customers;
+
+<span class="cm">-- Filter to only incomplete records for quarantine</span>
+<span class="kw">INSERT INTO</span> quarantine.missing_fields
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> bronze.orders
+<span class="kw">WHERE</span> customer_id <span class="kw">IS NULL</span> <span class="kw">OR</span> order_date <span class="kw">IS NULL</span>;</pre>
+  <div class="info-box warn"><div class="lb">Common Mistake</div><code>WHERE col = NULL</code> always returns 0 rows. SQL NULL ≠ any value including NULL itself. Always use <code>IS NULL</code> or <code>IS NOT NULL</code>.</div>
+</div>
+</div>
+
+</div><!-- fn-grid -->
+</div><!-- sec-null -->
+
+<!-- STRING FUNCTIONS -->
+<div id="sec-str" class="section">
+<div class="sec-title">🔤 String Functions<span class="fn-count">10 functions</span></div>
+<div class="sec-desc">String manipulation for raw data parsing, key construction, and output formatting. Essential for Bronze ingestion and Silver standardization.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">CONCAT / CONCAT_WS</div><div class="fn-sig">CONCAT(str1, str2, ...) | CONCAT_WS(sep, str1, str2, ...)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>CONCAT</strong> joins strings. NULL inputs make the whole result NULL (unlike ||). <strong>CONCAT_WS</strong> (With Separator) joins with a delimiter, skipping NULLs automatically — ideal for building composite keys.</div>
+<pre><span class="cm">-- Basic concat</span>
+<span class="kw">SELECT</span> <span class="fn2">CONCAT</span>(first_name, <span class="str">' '</span>, last_name) <span class="kw">AS</span> full_name <span class="kw">FROM</span> customers;
+
+<span class="cm">-- CONCAT_WS skips NULLs — great for composite keys</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">CONCAT_WS</span>(<span class="str">'-'</span>, country_code, region, city) <span class="kw">AS</span> location_key,
+  <span class="fn2">CONCAT_WS</span>(<span class="str">'|'</span>, product_id, variant_id, size_code) <span class="kw">AS</span> sku_key
+<span class="kw">FROM</span> products;
+<span class="cm">-- If region IS NULL: 'US-Toronto' not 'US--Toronto'</span>
+
+<span class="cm">-- Build ADLS path</span>
+<span class="kw">SELECT</span> <span class="fn2">CONCAT</span>(<span class="str">'abfss://gold@storage.dfs.core.windows.net/'</span>, table_name, <span class="str">'/'</span>, partition_date) <span class="kw">AS</span> path
+<span class="kw">FROM</span> catalog.control.partitions;</pre>
+  <div class="result-row">
+    <div class="result-box"><div class="rl">CONCAT('A', NULL, 'B')</div><div class="rv" style="color:var(--accent5)">NULL</div></div>
+    <div class="result-box"><div class="rl">CONCAT_WS('-','A',NULL,'B')</div><div class="rv" style="color:var(--accent3)">A-B</div></div>
+  </div>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">SUBSTRING / SUBSTR</div><div class="fn-sig">SUBSTRING(str, pos [, len])</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Extract a portion of a string. Position is 1-indexed. Negative pos counts from end. Without len, returns to end of string.</div>
+<pre><span class="cm">-- Extract year from YYYYMMDD string</span>
+<span class="kw">SELECT</span>
+  raw_date,
+  <span class="fn2">SUBSTRING</span>(raw_date, <span class="num">1</span>, <span class="num">4</span>)  <span class="kw">AS</span> year_str,   <span class="cm">-- '2024'</span>
+  <span class="fn2">SUBSTRING</span>(raw_date, <span class="num">5</span>, <span class="num">2</span>)  <span class="kw">AS</span> month_str,  <span class="cm">-- '06'</span>
+  <span class="fn2">SUBSTRING</span>(raw_date, <span class="num">7</span>, <span class="num">2</span>)  <span class="kw">AS</span> day_str     <span class="cm">-- '15'</span>
+<span class="kw">FROM</span> bronze.raw_events;
+
+<span class="cm">-- Extract domain from email</span>
+<span class="kw">SELECT</span>
+  email,
+  <span class="fn2">SUBSTRING</span>(email, <span class="fn2">INSTR</span>(email, <span class="str">'@'</span>) + <span class="num">1</span>) <span class="kw">AS</span> email_domain
+<span class="kw">FROM</span> customers;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">REGEXP_EXTRACT / REGEXP_REPLACE</div><div class="fn-sig">REGEXP_EXTRACT(str, pattern [, groupIdx])</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>REGEXP_EXTRACT</strong> extracts the first match (or specified group). <strong>REGEXP_REPLACE</strong> replaces matches. Both use Java regex syntax. Essential for parsing unstructured log strings.</div>
+<pre><span class="cm">-- Extract IP from log string: "GET /api 200 192.168.1.1 ..."</span>
+<span class="kw">SELECT</span>
+  raw_log,
+  <span class="fn2">REGEXP_EXTRACT</span>(raw_log, <span class="str">'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'</span>, <span class="num">1</span>) <span class="kw">AS</span> ip_address,
+  <span class="fn2">REGEXP_EXTRACT</span>(raw_log, <span class="str">'HTTP/(\d+\.\d+)'</span>, <span class="num">1</span>) <span class="kw">AS</span> http_version
+<span class="kw">FROM</span> bronze.app_logs;
+
+<span class="cm">-- Clean phone: remove non-digits</span>
+<span class="kw">SELECT</span> <span class="fn2">REGEXP_REPLACE</span>(phone, <span class="str">'[^0-9]'</span>, <span class="str">''</span>) <span class="kw">AS</span> phone_digits <span class="kw">FROM</span> contacts;
+
+<span class="cm">-- Mask PII: replace email local part</span>
+<span class="kw">SELECT</span> <span class="fn2">REGEXP_REPLACE</span>(email, <span class="str">'^[^@]+'</span>, <span class="str">'***'</span>) <span class="kw">AS</span> email_masked <span class="kw">FROM</span> users;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">SPLIT</div><div class="fn-sig">SPLIT(str, delim)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Splits string on delimiter (regex), returning an array. Use with <code>element_at()</code> to extract specific elements, or EXPLODE to pivot into rows.</div>
+<pre><span class="cm">-- Split CSV field into array</span>
+<span class="kw">SELECT</span>
+  product_id,
+  <span class="fn2">SPLIT</span>(tag_string, <span class="str">','</span>)       <span class="kw">AS</span> tags_array,        <span class="cm">-- ['sale','new','featured']</span>
+  <span class="fn2">SPLIT</span>(tag_string, <span class="str">','</span>)[<span class="num">0</span>]  <span class="kw">AS</span> primary_tag,       <span class="cm">-- 'sale' (0-indexed)</span>
+  <span class="fn2">SIZE</span>(<span class="fn2">SPLIT</span>(tag_string, <span class="str">','</span>)) <span class="kw">AS</span> tag_count
+<span class="kw">FROM</span> products;
+
+<span class="cm">-- Explode split into separate rows</span>
+<span class="kw">SELECT</span> product_id, tag
+<span class="kw">FROM</span> products
+<span class="kw">LATERAL VIEW</span> <span class="fn2">EXPLODE</span>(<span class="fn2">SPLIT</span>(tag_string, <span class="str">','</span>)) t <span class="kw">AS</span> tag;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TRIM / LTRIM / RTRIM</div><div class="fn-sig">TRIM([BOTH|LEADING|TRAILING] [chars FROM] str)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Remove leading/trailing whitespace or specific characters. Critical for standardizing strings from CSV/API sources that often contain accidental spaces.</div>
+<pre><span class="cm">-- Standard whitespace trim</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">TRIM</span>(raw_name)              <span class="kw">AS</span> name_clean,
+  <span class="fn2">TRIM</span>(<span class="str">'$'</span> <span class="kw">FROM</span> price_str)    <span class="kw">AS</span> price_no_symbol,
+  <span class="fn2">LTRIM</span>(<span class="str">'0'</span> <span class="kw">FROM</span> padded_id)  <span class="kw">AS</span> id_no_padding   <span class="cm">-- '00042' → '42'</span>
+<span class="kw">FROM</span> bronze.raw_data;
+
+<span class="cm">-- Silver standardization pattern</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">LOWER</span>(<span class="fn2">TRIM</span>(email))  <span class="kw">AS</span> email_normalized,
+  <span class="fn2">UPPER</span>(<span class="fn2">TRIM</span>(country_code)) <span class="kw">AS</span> country_normalized
+<span class="kw">FROM</span> bronze.customers;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">LPAD / RPAD</div><div class="fn-sig">LPAD(str, len, pad) | RPAD(str, len, pad)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Pad a string to a specific length. Essential for formatting codes, standardizing IDs, and generating fixed-width output.</div>
+<pre><span class="cm">-- Pad IDs to standard length for join keys</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">LPAD</span>(store_id::STRING, <span class="num">6</span>, <span class="str">'0'</span>)   <span class="kw">AS</span> store_id_padded,  <span class="cm">-- 42 → '000042'</span>
+  <span class="fn2">RPAD</span>(product_code, <span class="num">10</span>, <span class="str">' '</span>)    <span class="kw">AS</span> code_fixed_width
+<span class="kw">FROM</span> bronze.stores;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">REPLACE / TRANSLATE</div><div class="fn-sig">REPLACE(str, search, replace) | TRANSLATE(str, from, to)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>REPLACE</strong> substitutes all occurrences of a substring. <strong>TRANSLATE</strong> replaces characters one-for-one (like a character map). Translate is faster for multi-char replacements.</div>
+<pre><span class="cm">-- Remove unwanted chars from amounts</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">REPLACE</span>(amount_str, <span class="str">','</span>, <span class="str">''</span>)::DECIMAL  <span class="kw">AS</span> amount,  <span class="cm">-- '1,234.56' → 1234.56</span>
+  <span class="fn2">TRANSLATE</span>(raw_code, <span class="str">'OIl'</span>, <span class="str">'0I1'</span>)       <span class="kw">AS</span> code_clean  <span class="cm">-- confusable chars</span>
+<span class="kw">FROM</span> bronze.transactions;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">FORMAT_STRING / PRINTF</div><div class="fn-sig">FORMAT_STRING(fmt, args...)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">C-style string formatting. Great for building standardized display strings, log messages, or formatted report values.</div>
+<pre><span class="cm">-- Build formatted display strings</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">FORMAT_STRING</span>(<span class="str">'Order #%06d by %s — $%.2f'</span>, order_id, customer_name, amount) <span class="kw">AS</span> order_label,
+  <span class="fn2">FORMAT_STRING</span>(<span class="str">'%s/%s/%s'</span>, year, month, day) <span class="kw">AS</span> date_display
+<span class="kw">FROM</span> orders;
+<span class="cm">-- Result: 'Order #000042 by Alice — $1234.56'</span></pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">INSTR / POSITION / LOCATE</div><div class="fn-sig">INSTR(str, substr) → position (1-indexed, 0 if not found)</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Find the position of a substring. Returns 0 if not found. Often combined with SUBSTRING to split on a delimiter without regex.</div>
+<pre><span class="cm">-- Check if string contains value</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> events <span class="kw">WHERE</span> <span class="fn2">INSTR</span>(event_payload, <span class="str">'error'</span>) > <span class="num">0</span>;
+
+<span class="cm">-- Split on first occurrence of separator</span>
+<span class="kw">SELECT</span>
+  raw_value,
+  <span class="fn2">SUBSTRING</span>(raw_value, <span class="num">1</span>, <span class="fn2">INSTR</span>(raw_value, <span class="str">':'</span>) - <span class="num">1</span>) <span class="kw">AS</span> key_part,
+  <span class="fn2">SUBSTRING</span>(raw_value, <span class="fn2">INSTR</span>(raw_value, <span class="str">':'</span>) + <span class="num">1</span>)     <span class="kw">AS</span> val_part
+<span class="kw">FROM</span> bronze.key_value_pairs;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">LENGTH / CHAR_LENGTH</div><div class="fn-sig">LENGTH(str) → integer byte/char count</div><div class="fn-tag ft-str">String</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Returns string length. <strong>LENGTH</strong> returns bytes (multi-byte chars count as multiple). <strong>CHAR_LENGTH</strong>/<strong>CHARACTER_LENGTH</strong> returns character count. Essential for DQ validation.</div>
+<pre><span class="cm">-- DQ: validate field lengths</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> bronze.accounts
+<span class="kw">WHERE</span> <span class="fn2">LENGTH</span>(account_number) != <span class="num">16</span>           <span class="cm">-- wrong-length account numbers</span>
+   <span class="kw">OR</span> <span class="fn2">LENGTH</span>(<span class="fn2">TRIM</span>(customer_name)) < <span class="num">2</span>        <span class="cm">-- suspiciously short names</span>
+   <span class="kw">OR</span> <span class="fn2">LENGTH</span>(postal_code) <span class="kw">NOT IN</span> (<span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>);  <span class="cm">-- invalid postal length</span></pre>
+</div></div>
+
+</div>
+</div>
+
+<!-- DATE TIME -->
+<div id="sec-date" class="section">
+<div class="sec-title">📅 Date & Time Functions<span class="fn-count">8 functions</span></div>
+<div class="sec-desc">Date manipulation for time-based partitioning, SLA calculations, and reporting windows. Most critical category for data engineering.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">DATE_PART / EXTRACT</div><div class="fn-sig">DATE_PART(field, date) | EXTRACT(field FROM date)</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Extract a specific date/time component. <strong>DATE_PART</strong> and <strong>EXTRACT</strong> are functionally identical in Databricks. Supported fields: year, month, day, hour, minute, second, quarter, week, dayofweek, dayofyear, epoch.</div>
+<pre><span class="cm">-- Extract date components for partitioning and reporting</span>
+<span class="kw">SELECT</span>
+  event_ts,
+  <span class="fn2">DATE_PART</span>(<span class="str">'year'</span>,    event_ts) <span class="kw">AS</span> yr,
+  <span class="fn2">DATE_PART</span>(<span class="str">'month'</span>,   event_ts) <span class="kw">AS</span> mo,
+  <span class="fn2">DATE_PART</span>(<span class="str">'day'</span>,     event_ts) <span class="kw">AS</span> dy,
+  <span class="fn2">DATE_PART</span>(<span class="str">'hour'</span>,    event_ts) <span class="kw">AS</span> hr,
+  <span class="fn2">DATE_PART</span>(<span class="str">'quarter'</span>, event_ts) <span class="kw">AS</span> qtr,
+  <span class="fn2">DATE_PART</span>(<span class="str">'week'</span>,    event_ts) <span class="kw">AS</span> wk,
+  <span class="fn2">DATE_PART</span>(<span class="str">'dayofweek'</span>, event_ts) <span class="kw">AS</span> dow  <span class="cm">-- 1=Sunday, 7=Saturday</span>
+<span class="kw">FROM</span> silver.events;
+
+<span class="cm">-- Business logic: peak hour detection</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> transactions
+<span class="kw">WHERE</span> <span class="fn2">DATE_PART</span>(<span class="str">'hour'</span>, created_at) <span class="kw">BETWEEN</span> <span class="num">9</span> <span class="kw">AND</span> <span class="num">17</span>
+  <span class="kw">AND</span> <span class="fn2">DATE_PART</span>(<span class="str">'dayofweek'</span>, created_at) <span class="kw">BETWEEN</span> <span class="num">2</span> <span class="kw">AND</span> <span class="num">6</span>;  <span class="cm">-- Mon-Fri</span></pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">DATEDIFF</div><div class="fn-sig">DATEDIFF(unit, start, end) | DATEDIFF(end, start) → days</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Calculates the difference between two dates. The 2-argument form returns days. The 3-argument form (Databricks 11.3+) supports unit: day, month, year, hour, minute, second, week.</div>
+<pre><span class="cm">-- Customer tenure and aging</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">DATEDIFF</span>(CURRENT_DATE, signup_date)       <span class="kw">AS</span> days_since_signup,
+  <span class="fn2">DATEDIFF</span>(<span class="str">'month'</span>, signup_date, CURRENT_DATE) <span class="kw">AS</span> months_active,
+  <span class="fn2">DATEDIFF</span>(<span class="str">'year'</span>, birth_date, CURRENT_DATE)  <span class="kw">AS</span> age_years
+<span class="kw">FROM</span> silver.customers;
+
+<span class="cm">-- SLA breach detection</span>
+<span class="kw">SELECT</span>
+  order_id,
+  <span class="fn2">DATEDIFF</span>(delivered_at, promised_at) <span class="kw">AS</span> delivery_variance_days,
+  <span class="kw">CASE WHEN</span> <span class="fn2">DATEDIFF</span>(delivered_at, promised_at) > <span class="num">0</span> <span class="kw">THEN</span> <span class="str">'LATE'</span> <span class="kw">ELSE</span> <span class="str">'ON_TIME'</span> <span class="kw">END</span> <span class="kw">AS</span> sla_status
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">DATE_ADD / DATE_SUB</div><div class="fn-sig">DATE_ADD(date, days) | DATE_SUB(date, days)</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Add or subtract days from a date. For months, use <code>ADD_MONTHS()</code>. For intervals, use <code>date + INTERVAL N unit</code>. Essential for SLA windows and lookback periods.</div>
+<pre><span class="cm">-- Lookback windows</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> silver.transactions
+<span class="kw">WHERE</span> txn_date >= <span class="fn2">DATE_SUB</span>(CURRENT_DATE, <span class="num">30</span>);   <span class="cm">-- last 30 days</span>
+
+<span class="cm">-- SLA deadline calculation</span>
+<span class="kw">SELECT</span>
+  order_id,
+  order_date,
+  <span class="fn2">DATE_ADD</span>(order_date, <span class="num">3</span>)           <span class="kw">AS</span> standard_delivery_by,
+  <span class="fn2">DATE_ADD</span>(order_date, <span class="num">1</span>)           <span class="kw">AS</span> express_delivery_by,
+  order_date + <span class="kw">INTERVAL</span> <span class="num">6</span> <span class="kw">MONTH</span>    <span class="kw">AS</span> warranty_expiry
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">DATE_TRUNC</div><div class="fn-sig">DATE_TRUNC(unit, datetime)</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Truncate a datetime to a specified unit. Returns a datetime with lower-precision parts zeroed out. Essential for grouping into time buckets (hours, days, weeks, months) for reporting.</div>
+<pre><span class="cm">-- Time bucket aggregations for reporting</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">DATE_TRUNC</span>(<span class="str">'hour'</span>,  event_ts) <span class="kw">AS</span> hour_bucket,
+  <span class="fn2">DATE_TRUNC</span>(<span class="str">'day'</span>,   event_ts) <span class="kw">AS</span> day_bucket,
+  <span class="fn2">DATE_TRUNC</span>(<span class="str">'week'</span>,  event_ts) <span class="kw">AS</span> week_bucket,
+  <span class="fn2">DATE_TRUNC</span>(<span class="str">'month'</span>, event_ts) <span class="kw">AS</span> month_bucket,
+  <span class="fn2">COUNT</span>(*) <span class="kw">AS</span> event_count
+<span class="kw">FROM</span> silver.events
+<span class="kw">GROUP BY</span> <span class="fn2">DATE_TRUNC</span>(<span class="str">'hour'</span>, event_ts)
+<span class="kw">ORDER BY</span> <span class="num">1</span>;
+
+<span class="cm">-- Start of current month for incremental load watermark</span>
+<span class="kw">SELECT</span> <span class="fn2">DATE_TRUNC</span>(<span class="str">'month'</span>, CURRENT_DATE) <span class="kw">AS</span> month_start;</pre>
+  <div class="result-row">
+    <div class="result-box"><div class="rl">DATE_TRUNC('month', '2024-06-15 14:32:00')</div><div class="rv" style="color:var(--accent3)">2024-06-01 00:00:00</div></div>
+  </div>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TO_DATE / TO_TIMESTAMP</div><div class="fn-sig">TO_DATE(str [, format]) | TO_TIMESTAMP(str [, format])</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Parse strings into date/timestamp types. Format uses Java SimpleDateFormat patterns. Critical for Bronze standardization — source systems send dates in every format imaginable.</div>
+<pre><span class="cm">-- Parse various date formats from Bronze</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">TO_DATE</span>(<span class="str">'20240615'</span>,         <span class="str">'yyyyMMdd'</span>)       <span class="kw">AS</span> d1,  <span class="cm">-- 2024-06-15</span>
+  <span class="fn2">TO_DATE</span>(<span class="str">'15/06/2024'</span>,      <span class="str">'dd/MM/yyyy'</span>)     <span class="kw">AS</span> d2,
+  <span class="fn2">TO_DATE</span>(<span class="str">'June 15, 2024'</span>,   <span class="str">'MMMM d, yyyy'</span>)   <span class="kw">AS</span> d3,
+  <span class="fn2">TO_TIMESTAMP</span>(<span class="str">'2024-06-15T14:32:00Z'</span>, <span class="str">"yyyy-MM-dd'T'HH:mm:ss'Z'"</span>) <span class="kw">AS</span> ts1;
+
+<span class="cm">-- TRY_TO_DATE: returns NULL instead of error on bad format</span>
+<span class="kw">SELECT</span>
+  raw_date,
+  <span class="fn2">TRY_TO_DATE</span>(raw_date, <span class="str">'yyyy-MM-dd'</span>) <span class="kw">AS</span> parsed_date,  <span class="cm">-- NULL if unparseable</span>
+  <span class="fn2">TRY_TO_DATE</span>(raw_date, <span class="str">'yyyy-MM-dd'</span>) <span class="kw">IS NULL AS</span> is_bad_date
+<span class="kw">FROM</span> bronze.raw_orders;</pre>
+  <div class="info-box tip"><div class="lb">DQ Pattern</div>Use <code>TRY_TO_DATE</code> in Bronze→Silver — it returns NULL on bad dates instead of failing the whole pipeline. Then count and quarantine nulls.</div>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">CURRENT_DATE / CURRENT_TIMESTAMP / NOW</div><div class="fn-sig">CURRENT_DATE() | CURRENT_TIMESTAMP() | NOW()</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">System current date/time. <strong>CURRENT_DATE</strong> = date only. <strong>CURRENT_TIMESTAMP / NOW()</strong> = timestamp with timezone. Evaluated once per query, not per row. Used for audit columns and watermarks.</div>
+<pre><span class="cm">-- Add audit columns in Silver layer</span>
+<span class="kw">SELECT</span>
+  *,
+  CURRENT_DATE      <span class="kw">AS</span> load_date,
+  CURRENT_TIMESTAMP <span class="kw">AS</span> load_ts,
+  <span class="str">'silver_orders_job'</span> <span class="kw">AS</span> source_job
+<span class="kw">FROM</span> bronze.orders;
+
+<span class="cm">-- Incremental load: get records from last 24h</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> bronze.events
+<span class="kw">WHERE</span> event_ts >= CURRENT_TIMESTAMP - <span class="kw">INTERVAL</span> <span class="num">1</span> <span class="kw">DAY</span>;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">DATE_FORMAT</div><div class="fn-sig">DATE_FORMAT(date, format)</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Format a date/timestamp as a string using Java SimpleDateFormat pattern. Used for building partition paths, display strings, and exporting data.</div>
+<pre><span class="cm">-- Build partition path strings</span>
+<span class="kw">SELECT</span>
+  event_ts,
+  <span class="fn2">DATE_FORMAT</span>(event_ts, <span class="str">'yyyy'</span>)       <span class="kw">AS</span> year,
+  <span class="fn2">DATE_FORMAT</span>(event_ts, <span class="str">'yyyy-MM'</span>)    <span class="kw">AS</span> year_month,
+  <span class="fn2">DATE_FORMAT</span>(event_ts, <span class="str">'yyyy-MM-dd'</span>) <span class="kw">AS</span> date_str,
+  <span class="fn2">DATE_FORMAT</span>(event_ts, <span class="str">'EEE, dd MMM yyyy'</span>) <span class="kw">AS</span> friendly_date  <span class="cm">-- 'Mon, 15 Jun 2024'</span>
+<span class="kw">FROM</span> silver.events;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">MONTHS_BETWEEN / ADD_MONTHS</div><div class="fn-sig">MONTHS_BETWEEN(date1, date2) | ADD_MONTHS(date, n)</div><div class="fn-tag ft-date">Date & Time</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>MONTHS_BETWEEN</strong> returns fractional months between two dates. <strong>ADD_MONTHS</strong> adds N months, correctly handling month-end dates (Jan 31 + 1 month = Feb 28/29).</div>
+<pre><span class="cm">-- Subscription analytics</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">MONTHS_BETWEEN</span>(CURRENT_DATE, subscription_start)   <span class="kw">AS</span> months_subscribed,
+  <span class="fn2">ROUND</span>(<span class="fn2">MONTHS_BETWEEN</span>(CURRENT_DATE, subscription_start)) <span class="kw">AS</span> full_months,
+  <span class="fn2">ADD_MONTHS</span>(subscription_start, <span class="num">12</span>)                 <span class="kw">AS</span> renewal_date,
+  <span class="fn2">ADD_MONTHS</span>(subscription_start, <span class="num">1</span>)                  <span class="kw">AS</span> first_billing_date
+<span class="kw">FROM</span> silver.subscriptions;</pre>
+</div></div>
+
+</div>
+</div>
+
+<!-- AGGREGATE -->
+<div id="sec-agg" class="section">
+<div class="sec-title">📊 Aggregate Functions<span class="fn-count">8 functions</span></div>
+<div class="sec-desc">Power your Gold layer rollups, feature engineering, and analytical summaries.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">COLLECT_SET</div><div class="fn-sig">COLLECT_SET(col)</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Collects all distinct (non-null) values into an array. Order is NOT guaranteed. Returns empty array if all values are NULL. Ideal for creating arrays of unique tags, categories, or related IDs per group.</div>
+<pre><span class="cm">-- Collect unique product categories per customer</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">COLLECT_SET</span>(category)          <span class="kw">AS</span> unique_categories,  <span class="cm">-- ['electronics','books','clothing']</span>
+  <span class="fn2">SIZE</span>(<span class="fn2">COLLECT_SET</span>(category))     <span class="kw">AS</span> category_count,
+  <span class="fn2">ARRAY_CONTAINS</span>(<span class="fn2">COLLECT_SET</span>(category), <span class="str">'electronics'</span>) <span class="kw">AS</span> bought_electronics
+<span class="kw">FROM</span> silver.orders
+<span class="kw">GROUP BY</span> customer_id;
+
+<span class="cm">-- Multi-value pivot: store all role names per user</span>
+<span class="kw">SELECT</span>
+  user_id,
+  <span class="fn2">COLLECT_SET</span>(role_name)  <span class="kw">AS</span> roles,
+  <span class="fn2">SORT_ARRAY</span>(<span class="fn2">COLLECT_SET</span>(role_name)) <span class="kw">AS</span> roles_sorted
+<span class="kw">FROM</span> security.user_roles
+<span class="kw">GROUP BY</span> user_id;</pre>
+  <div class="info-box tip"><div class="lb">vs COLLECT_LIST</div>COLLECT_SET = distinct values, unordered. COLLECT_LIST = all values including duplicates, preserves insertion order. Use SET for tags/categories, LIST for ordered sequences.</div>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">COLLECT_LIST</div><div class="fn-sig">COLLECT_LIST(col)</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Collects all values (including duplicates) into an array, preserving order within each group. Use when order or frequency matters. Combine with ORDER BY in window functions for ordered lists.</div>
+<pre><span class="cm">-- Collect customer's ordered event sequence</span>
+<span class="kw">SELECT</span>
+  session_id,
+  <span class="fn2">COLLECT_LIST</span>(page_name)                  <span class="kw">AS</span> page_sequence,
+  <span class="fn2">COLLECT_LIST</span>(event_type)                 <span class="kw">AS</span> event_sequence,
+  <span class="fn2">SIZE</span>(<span class="fn2">COLLECT_LIST</span>(page_name))            <span class="kw">AS</span> pages_visited
+<span class="kw">FROM</span> (
+  <span class="kw">SELECT</span> * <span class="kw">FROM</span> silver.clickstream <span class="kw">ORDER BY</span> event_ts
+) ordered
+<span class="kw">GROUP BY</span> session_id;
+
+<span class="cm">-- Feature engineering: order history as array for ML</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">COLLECT_LIST</span>(product_id)   <span class="kw">AS</span> purchased_products,  <span class="cm">-- for recommendation model</span>
+  <span class="fn2">COLLECT_LIST</span>(amount)       <span class="kw">AS</span> amount_history
+<span class="kw">FROM</span> silver.orders
+<span class="kw">GROUP BY</span> customer_id;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">COUNT_IF</div><div class="fn-sig">COUNT_IF(condition)</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Counts rows where condition is TRUE. Equivalent to <code>SUM(CASE WHEN ... THEN 1 ELSE 0 END)</code> but cleaner. Essential for multi-condition DQ checks and conditional rollups in one pass.</div>
+<pre><span class="cm">-- DQ report: multiple checks in single pass (efficient!)</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">COUNT</span>(*)                                    <span class="kw">AS</span> total_rows,
+  <span class="fn2">COUNT_IF</span>(customer_id <span class="kw">IS NULL</span>)               <span class="kw">AS</span> null_customer_id,
+  <span class="fn2">COUNT_IF</span>(amount <= <span class="num">0</span>)                        <span class="kw">AS</span> non_positive_amount,
+  <span class="fn2">COUNT_IF</span>(order_date > CURRENT_DATE)          <span class="kw">AS</span> future_dates,
+  <span class="fn2">COUNT_IF</span>(status = <span class="str">'CANCELLED'</span>)              <span class="kw">AS</span> cancelled_count,
+  <span class="fn2">ROUND</span>(<span class="fn2">COUNT_IF</span>(status = <span class="str">'CANCELLED'</span>) * <span class="num">100.0</span> / <span class="fn2">COUNT</span>(*), <span class="num">2</span>) <span class="kw">AS</span> cancel_rate_pct
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">PERCENTILE / PERCENTILE_APPROX</div><div class="fn-sig">PERCENTILE(col, pct) | PERCENTILE_APPROX(col, pct [, accuracy])</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>PERCENTILE</strong> is exact but slow (requires sorting all data). <strong>PERCENTILE_APPROX</strong> uses HyperLogLog estimation — fast, uses ~1% error. For large tables (100M+ rows), always use APPROX.</div>
+<pre><span class="cm">-- Latency SLA analysis — exact (use on small tables only)</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">PERCENTILE</span>(response_ms, <span class="num">0.50</span>) <span class="kw">AS</span> p50,
+  <span class="fn2">PERCENTILE</span>(response_ms, <span class="num">0.95</span>) <span class="kw">AS</span> p95,
+  <span class="fn2">PERCENTILE</span>(response_ms, <span class="num">0.99</span>) <span class="kw">AS</span> p99
+<span class="kw">FROM</span> silver.api_logs;
+
+<span class="cm">-- Same but approximate — use for large tables</span>
+<span class="kw">SELECT</span>
+  service_name,
+  <span class="fn2">PERCENTILE_APPROX</span>(response_ms, <span class="num">0.50</span>, <span class="num">10000</span>) <span class="kw">AS</span> p50,
+  <span class="fn2">PERCENTILE_APPROX</span>(response_ms, <span class="num">0.99</span>, <span class="num">10000</span>) <span class="kw">AS</span> p99,
+  <span class="fn2">PERCENTILE_APPROX</span>(amount, <span class="kw">ARRAY</span>(<span class="num">0.25</span>, <span class="num">0.5</span>, <span class="num">0.75</span>)) <span class="kw">AS</span> quartiles
+<span class="kw">FROM</span> silver.transactions
+<span class="kw">GROUP BY</span> service_name;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">APPROX_COUNT_DISTINCT</div><div class="fn-sig">APPROX_COUNT_DISTINCT(col [, rsd])</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">HyperLogLog-based approximate distinct count. ~5% error by default, configurable with rsd (relative standard deviation). 10–100x faster than COUNT(DISTINCT) on large tables. Essential for DAU/MAU metrics.</div>
+<pre><span class="cm">-- DAU/MAU metrics with approx distinct</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">DATE_TRUNC</span>(<span class="str">'day'</span>, event_ts) <span class="kw">AS</span> day,
+  <span class="fn2">APPROX_COUNT_DISTINCT</span>(user_id)           <span class="kw">AS</span> dau,
+  <span class="fn2">APPROX_COUNT_DISTINCT</span>(user_id, <span class="num">0.01</span>)    <span class="kw">AS</span> dau_precise,  <span class="cm">-- 1% error</span>
+  <span class="fn2">COUNT</span>(*) <span class="kw">AS</span> total_events
+<span class="kw">FROM</span> silver.events
+<span class="kw">GROUP BY</span> <span class="num">1</span>;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">GROUPING SETS / ROLLUP / CUBE</div><div class="fn-sig">GROUP BY GROUPING SETS ((c1,c2),(c1),())</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Generate multiple aggregation levels in a single query. <strong>ROLLUP</strong> = hierarchical subtotals. <strong>CUBE</strong> = all combinations. <strong>GROUPING SETS</strong> = explicit control. Far more efficient than multiple UNION ALLs.</div>
+<pre><span class="cm">-- ROLLUP: region → country → total hierarchy</span>
+<span class="kw">SELECT</span> region, country, <span class="fn2">SUM</span>(revenue) <span class="kw">AS</span> revenue
+<span class="kw">FROM</span> gold.sales
+<span class="kw">GROUP BY</span> <span class="fn2">ROLLUP</span>(region, country);
+<span class="cm">-- Produces: (region, country), (region, NULL=subtotal), (NULL, NULL=grand total)</span>
+
+<span class="cm">-- GROUPING SETS: explicit subtotals for dashboard</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">GROUPING_ID</span>(region, product_line) <span class="kw">AS</span> agg_level,
+  region, product_line,
+  <span class="fn2">SUM</span>(revenue) <span class="kw">AS</span> revenue
+<span class="kw">FROM</span> gold.sales
+<span class="kw">GROUP BY</span> <span class="fn2">GROUPING SETS</span> ((region, product_line), (region), (product_line), ());</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">FIRST / LAST</div><div class="fn-sig">FIRST(col [, ignorenulls]) | LAST(col [, ignorenulls])</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Returns first/last value in group. Order depends on data — use with ORDER BY in a subquery for deterministic results. <code>ignorenulls=true</code> skips NULL values.</div>
+<pre><span class="cm">-- Get first and last event per session</span>
+<span class="kw">SELECT</span>
+  session_id,
+  <span class="fn2">FIRST</span>(page_name) <span class="kw">AS</span> entry_page,
+  <span class="fn2">LAST</span>(page_name)  <span class="kw">AS</span> exit_page,
+  <span class="fn2">FIRST</span>(event_ts)  <span class="kw">AS</span> session_start,
+  <span class="fn2">LAST</span>(event_ts)   <span class="kw">AS</span> session_end
+<span class="kw">FROM</span> (SELECT * <span class="kw">FROM</span> silver.clickstream <span class="kw">ORDER BY</span> event_ts)
+<span class="kw">GROUP BY</span> session_id;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">SUM / AVG / MIN / MAX / COUNT</div><div class="fn-sig">Standard aggregate functions — but with key Databricks nuances</div><div class="fn-tag ft-agg">Aggregate</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Standard aggregates, but important Databricks-specific behaviors to know: all ignore NULLs by default. COUNT(*) includes NULLs; COUNT(col) excludes them. FILTER clause enables conditional aggregation.</div>
+<pre><span class="cm">-- Conditional aggregation with FILTER (SQL 2003 standard)</span>
+<span class="kw">SELECT</span>
+  product_id,
+  <span class="fn2">SUM</span>(amount)                                           <span class="kw">AS</span> total_revenue,
+  <span class="fn2">SUM</span>(amount) <span class="kw">FILTER</span> (<span class="kw">WHERE</span> status = <span class="str">'COMPLETED'</span>)       <span class="kw">AS</span> completed_revenue,
+  <span class="fn2">AVG</span>(amount) <span class="kw">FILTER</span> (<span class="kw">WHERE</span> channel = <span class="str">'ONLINE'</span>)         <span class="kw">AS</span> avg_online_amount,
+  <span class="fn2">COUNT</span>(*) <span class="kw">FILTER</span> (<span class="kw">WHERE</span> is_refund = <span class="kw">TRUE</span>)              <span class="kw">AS</span> refund_count
+<span class="kw">FROM</span> silver.transactions
+<span class="kw">GROUP BY</span> product_id;</pre>
+  <div class="info-box tip"><div class="lb">NULL Behavior</div><code>SUM(NULL, NULL, 5)</code> = 5 (NULLs ignored). <code>AVG(NULL, 5)</code> = 5 (NULLs excluded from denominator). Use COALESCE before aggregation if you want NULL treated as 0.</div>
+</div></div>
+
+</div>
+</div>
+
+<!-- WINDOW FUNCTIONS -->
+<div id="sec-win" class="section">
+<div class="sec-title">🪟 Window Functions<span class="fn-count">8 functions</span></div>
+<div class="sec-desc">Perform calculations across a set of rows related to the current row without collapsing them. Critical for SCD Type 2, deduplication, and running totals.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">ROW_NUMBER</div><div class="fn-sig">ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...)</div><div class="fn-tag ft-win">Window</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Assigns a unique sequential integer to each row within a partition. Unlike RANK, no ties — always produces 1,2,3,... The most common window function. Primary use: deduplication (keep row_number=1).</div>
+<pre><span class="cm">-- Deduplicate: keep latest record per customer</span>
+<span class="kw">WITH</span> deduped <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> *,
+    <span class="fn2">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+      <span class="kw">PARTITION BY</span> customer_id
+      <span class="kw">ORDER BY</span> updated_at <span class="kw">DESC</span>   <span class="cm">-- latest first</span>
+    ) <span class="kw">AS</span> rn
+  <span class="kw">FROM</span> bronze.customers
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> deduped <span class="kw">WHERE</span> rn = <span class="num">1</span>;
+
+<span class="cm">-- SCD Type 2: identify changed records</span>
+<span class="kw">SELECT</span> *,
+  <span class="fn2">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> effective_date <span class="kw">DESC</span>) <span class="kw">AS</span> rn
+<span class="kw">FROM</span> silver.dim_customer;
+<span class="cm">-- rn = 1 → is_current = true</span></pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">RANK / DENSE_RANK</div><div class="fn-sig">RANK() | DENSE_RANK() OVER (PARTITION BY ... ORDER BY ...)</div><div class="fn-tag ft-win">Window</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>RANK</strong>: ties get same rank, next rank skips (1,1,3). <strong>DENSE_RANK</strong>: ties get same rank, next rank does NOT skip (1,1,2). Use DENSE_RANK for leaderboards and top-N per group.</div>
+<pre><span class="cm">-- Top 3 products per category by revenue</span>
+<span class="kw">WITH</span> ranked <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    category, product_name, revenue,
+    <span class="fn2">DENSE_RANK</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> category <span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span>) <span class="kw">AS</span> rank_in_cat
+  <span class="kw">FROM</span> gold.product_revenue
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> ranked <span class="kw">WHERE</span> rank_in_cat <= <span class="num">3</span>;</pre>
+  <div class="result-row">
+    <div class="result-box"><div class="rl">RANK (tie at 2)</div><div class="rv">1, 2, 2, 4</div></div>
+    <div class="result-box"><div class="rl">DENSE_RANK (same)</div><div class="rv" style="color:var(--accent3)">1, 2, 2, 3</div></div>
+  </div>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">LAG / LEAD</div><div class="fn-sig">LAG(col [, offset [, default]]) OVER (PARTITION BY ... ORDER BY ...)</div><div class="fn-tag ft-win">Window</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc"><strong>LAG</strong> looks back N rows. <strong>LEAD</strong> looks forward N rows. Essential for change detection (SCD triggers), calculating time deltas, and period-over-period comparisons.</div>
+<pre><span class="cm">-- Month-over-month revenue change</span>
+<span class="kw">SELECT</span>
+  month,
+  revenue,
+  <span class="fn2">LAG</span>(revenue, <span class="num">1</span>, <span class="num">0</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> prev_month_revenue,
+  revenue - <span class="fn2">LAG</span>(revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> mom_change,
+  <span class="fn2">ROUND</span>((revenue - <span class="fn2">LAG</span>(revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month)) * <span class="num">100.0</span> /
+    <span class="fn2">LAG</span>(revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month), <span class="num">2</span>) <span class="kw">AS</span> mom_pct
+<span class="kw">FROM</span> gold.monthly_revenue;
+
+<span class="cm">-- SCD Type 2: detect city change with LAG</span>
+<span class="kw">SELECT</span> *,
+  <span class="fn2">LAG</span>(city) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> updated_at) <span class="kw">AS</span> prev_city,
+  city != <span class="fn2">LAG</span>(city) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> updated_at) <span class="kw">AS</span> city_changed
+<span class="kw">FROM</span> silver.customers;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">FIRST_VALUE / LAST_VALUE</div><div class="fn-sig">FIRST_VALUE(col [, ignorenulls]) OVER (...)</div><div class="fn-tag ft-win">Window</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Returns the first/last value in the window frame. Note: LAST_VALUE default frame is UNBOUNDED PRECEDING TO CURRENT ROW — you usually need to extend it to UNBOUNDED FOLLOWING for true last value.</div>
+<pre><span class="cm">-- First and last purchase date per customer (running)</span>
+<span class="kw">SELECT</span>
+  customer_id, order_date, amount,
+  <span class="fn2">FIRST_VALUE</span>(order_date) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> order_date) <span class="kw">AS</span> first_order,
+  <span class="fn2">LAST_VALUE</span>(order_date) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> order_date
+    <span class="kw">ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING</span>  <span class="cm">-- important!</span>
+  ) <span class="kw">AS</span> last_order
+<span class="kw">FROM</span> silver.orders;</pre>
+  <div class="info-box warn"><div class="lb">Frame Gotcha</div>LAST_VALUE without explicit frame rows = last value up to current row, not partition last. Always specify <code>ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING</code>.</div>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">SUM / AVG as Window</div><div class="fn-sig">SUM(col) OVER (PARTITION BY ... ORDER BY ... ROWS BETWEEN ...)</div><div class="fn-tag ft-win">Window</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Running totals, cumulative sums, rolling averages. The ROWS/RANGE clause controls the frame size. Essential for time-series analytics and fraud feature engineering.</div>
+<pre><span class="cm">-- Running total + 7-day rolling average</span>
+<span class="kw">SELECT</span>
+  order_date,
+  daily_revenue,
+  <span class="fn2">SUM</span>(daily_revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> order_date) <span class="kw">AS</span> cumulative_revenue,
+  <span class="fn2">AVG</span>(daily_revenue) <span class="kw">OVER</span> (
+    <span class="kw">ORDER BY</span> order_date
+    <span class="kw">ROWS BETWEEN</span> <span class="num">6</span> <span class="kw">PRECEDING AND CURRENT ROW</span>
+  ) <span class="kw">AS</span> rolling_7day_avg,
+  <span class="cm">-- Fraud feature: 1h rolling transaction sum per customer</span>
+  <span class="fn2">SUM</span>(amount) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> customer_id
+    <span class="kw">ORDER BY</span> txn_ts
+    <span class="kw">RANGE BETWEEN</span> <span class="kw">INTERVAL</span> <span class="num">1</span> <span class="kw">HOUR PRECEDING AND CURRENT ROW</span>
+  ) <span class="kw">AS</span> rolling_1h_spend
+<span class="kw">FROM</span> gold.daily_revenue;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">NTILE</div><div class="fn-sig">NTILE(n) OVER (PARTITION BY ... ORDER BY ...)</div><div class="fn-tag ft-win">Window</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Divides rows into N equal buckets (1 to N). The simplest way to create quartiles, deciles, or percentile buckets. Rows are distributed as evenly as possible.</div>
+<pre><span class="cm">-- Customer revenue quartiles (Q1–Q4)</span>
+<span class="kw">SELECT</span>
+  customer_id, annual_revenue,
+  <span class="fn2">NTILE</span>(<span class="num">4</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> annual_revenue) <span class="kw">AS</span> revenue_quartile,
+  <span class="fn2">NTILE</span>(<span class="num">10</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> annual_revenue) <span class="kw">AS</span> revenue_decile,
+  <span class="kw">CASE</span> <span class="fn2">NTILE</span>(<span class="num">4</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> annual_revenue)
+    <span class="kw">WHEN</span> <span class="num">4</span> <span class="kw">THEN</span> <span class="str">'PLATINUM'</span>
+    <span class="kw">WHEN</span> <span class="num">3</span> <span class="kw">THEN</span> <span class="str">'GOLD'</span>
+    <span class="kw">WHEN</span> <span class="num">2</span> <span class="kw">THEN</span> <span class="str">'SILVER'</span>
+    <span class="kw">ELSE</span> <span class="str">'BRONZE'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> tier
+<span class="kw">FROM</span> gold.customer_ltv;</pre>
+</div></div>
+
+</div>
+</div>
+
+<!-- ARRAY & MAP -->
+<div id="sec-arr" class="section">
+<div class="sec-title">🗂️ Array & Map Functions<span class="fn-count">8 functions</span></div>
+<div class="sec-desc">Process semi-structured data from Bronze layer — Event Hubs JSON payloads, Kafka messages, and nested column types.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">EXPLODE / POSEXPLODE</div><div class="fn-sig">EXPLODE(array_col) | POSEXPLODE(array_col) → (pos, col)</div><div class="fn-tag ft-arr">Array</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Flattens an array into separate rows — one row per element. <strong>POSEXPLODE</strong> also returns the 0-based position. Use <code>EXPLODE_OUTER</code> to keep rows with empty/NULL arrays.</div>
+<pre><span class="cm">-- Normalize product tags from array to rows</span>
+<span class="kw">SELECT</span> product_id, tag
+<span class="kw">FROM</span> silver.products
+<span class="kw">LATERAL VIEW</span> <span class="fn2">EXPLODE</span>(tags) t <span class="kw">AS</span> tag;
+
+<span class="cm">-- With position (for ordered lists)</span>
+<span class="kw">SELECT</span> order_id, pos, item_name
+<span class="kw">FROM</span> silver.orders
+<span class="kw">LATERAL VIEW</span> <span class="fn2">POSEXPLODE</span>(line_items) t <span class="kw">AS</span> pos, item_name;
+
+<span class="cm">-- Inline syntax (Databricks preferred)</span>
+<span class="kw">SELECT</span> product_id, tag
+<span class="kw">FROM</span> silver.products, <span class="fn2">LATERAL</span> (<span class="kw">SELECT</span> <span class="fn2">EXPLODE</span>(tags) <span class="kw">AS</span> tag);</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TRANSFORM</div><div class="fn-sig">TRANSFORM(array, x -> expression)</div><div class="fn-tag ft-arr">Array</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Apply a lambda function to every element of an array — like Array.map(). Returns a new array. Avoids EXPLODE → transform → re-aggregate overhead.</div>
+<pre><span class="cm">-- Transform array elements in-place</span>
+<span class="kw">SELECT</span>
+  product_id,
+  <span class="fn2">TRANSFORM</span>(prices, p -> p * <span class="num">1.13</span>)         <span class="kw">AS</span> prices_with_tax,
+  <span class="fn2">TRANSFORM</span>(tags, t -> <span class="fn2">UPPER</span>(t))           <span class="kw">AS</span> tags_upper,
+  <span class="fn2">TRANSFORM</span>(timestamps, ts -> <span class="fn2">DATE_TRUNC</span>(<span class="str">'day'</span>, ts)) <span class="kw">AS</span> dates_only
+<span class="kw">FROM</span> silver.products;
+<span class="cm">-- No EXPLODE needed — works on array directly</span></pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">FILTER (array)</div><div class="fn-sig">FILTER(array, x -> boolean_expr)</div><div class="fn-tag ft-arr">Array</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Keep only array elements matching a predicate — like Array.filter(). Returns a new array. Perfect for removing nulls, filtering events, or subsetting tags.</div>
+<pre><span class="cm">-- Filter array elements by condition</span>
+<span class="kw">SELECT</span>
+  order_id,
+  <span class="fn2">FILTER</span>(items, x -> x.price > <span class="num">100</span>)          <span class="kw">AS</span> premium_items,
+  <span class="fn2">FILTER</span>(tags, t -> t != <span class="str">''</span>)                  <span class="kw">AS</span> tags_no_empty,
+  <span class="fn2">FILTER</span>(events, e -> e.type = <span class="str">'click'</span>)       <span class="kw">AS</span> click_events,
+  <span class="fn2">SIZE</span>(<span class="fn2">FILTER</span>(items, x -> x.is_refunded))     <span class="kw">AS</span> refunded_count
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">ARRAY_CONTAINS / ARRAY_EXCEPT / ARRAY_INTERSECT</div><div class="fn-sig">ARRAY_CONTAINS(arr, value) | ARRAY_UNION(a, b) | ARRAY_EXCEPT(a, b)</div><div class="fn-tag ft-arr">Array</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Set operations on arrays. <strong>ARRAY_CONTAINS</strong> for membership test. <strong>ARRAY_INTERSECT</strong> for common elements. <strong>ARRAY_EXCEPT</strong> for difference. <strong>ARRAY_UNION</strong> for merge distinct.</div>
+<pre><span class="cm">-- Check memberships and set ops</span>
+<span class="kw">SELECT</span>
+  customer_id,
+  <span class="fn2">ARRAY_CONTAINS</span>(purchased_categories, <span class="str">'electronics'</span>) <span class="kw">AS</span> bought_electronics,
+  <span class="fn2">ARRAY_INTERSECT</span>(customer_tags, <span class="kw">ARRAY</span>(<span class="str">'vip'</span>, <span class="str">'premium'</span>)) <span class="kw">AS</span> premium_tags,
+  <span class="fn2">SIZE</span>(<span class="fn2">ARRAY_INTERSECT</span>(purchased_skus, recommended_skus)) <span class="kw">AS</span> reco_hits,
+  <span class="fn2">ARRAY_EXCEPT</span>(all_features, enabled_features) <span class="kw">AS</span> disabled_features
+<span class="kw">FROM</span> gold.customer_features;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">AGGREGATE (array reduce)</div><div class="fn-sig">AGGREGATE(array, init, merge [, finish])</div><div class="fn-tag ft-arr">Array</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Applies a custom fold/reduce over an array. Like Array.reduce(). Takes initial value, merge lambda, and optional finish lambda. For custom computations on array elements.</div>
+<pre><span class="cm">-- Sum all prices in an array</span>
+<span class="kw">SELECT</span>
+  order_id,
+  <span class="fn2">AGGREGATE</span>(prices, <span class="num">0.0</span>, (acc, x) -> acc + x)  <span class="kw">AS</span> total_price,
+  <span class="fn2">AGGREGATE</span>(scores, <span class="num">0</span>, (acc, x) -> acc + x, acc -> acc / <span class="fn2">SIZE</span>(scores)) <span class="kw">AS</span> avg_score
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">MAP_KEYS / MAP_VALUES / ELEMENT_AT</div><div class="fn-sig">MAP_KEYS(map) | MAP_VALUES(map) | ELEMENT_AT(coll, key)</div><div class="fn-tag ft-arr">Map</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Operations on MAP type columns. Common in event data where properties are stored as key-value maps. <strong>ELEMENT_AT</strong> works on both arrays (by index) and maps (by key).</div>
+<pre><span class="cm">-- Access map properties from event payload</span>
+<span class="kw">SELECT</span>
+  event_id,
+  <span class="fn2">ELEMENT_AT</span>(properties, <span class="str">'user_id'</span>)         <span class="kw">AS</span> user_id,
+  <span class="fn2">ELEMENT_AT</span>(properties, <span class="str">'device_type'</span>)     <span class="kw">AS</span> device,
+  <span class="fn2">MAP_KEYS</span>(properties)                       <span class="kw">AS</span> all_property_keys,
+  <span class="fn2">SIZE</span>(<span class="fn2">MAP_KEYS</span>(properties))                 <span class="kw">AS</span> property_count,
+  <span class="fn2">ELEMENT_AT</span>(items_array, <span class="num">1</span>)                 <span class="kw">AS</span> first_item  <span class="cm">-- 1-indexed!</span>
+<span class="kw">FROM</span> bronze.events;</pre>
+  <div class="info-box warn"><div class="lb">Indexing</div>ELEMENT_AT on arrays is 1-indexed (position 1 = first). Square bracket <code>arr[0]</code> is 0-indexed. Be consistent — mixing these is a common bug.</div>
+</div></div>
+
+</div>
+</div>
+
+<!-- CONDITIONAL -->
+<div id="sec-cond" class="section">
+<div class="sec-title">🔀 Conditional Functions<span class="fn-count">6 functions</span></div>
+<div class="sec-desc">Business rule encoding, status classification, and value selection logic.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">CASE WHEN</div><div class="fn-sig">CASE WHEN cond THEN val ... [ELSE default] END</div><div class="fn-tag ft-cond">Conditional</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">The most flexible conditional expression. Supports complex multi-condition logic, nested expressions, and can reference any column. Two forms: searched CASE (conditions) and simple CASE (equality).</div>
+<pre><span class="cm">-- Searched CASE: complex conditions</span>
+<span class="kw">SELECT</span>
+  order_id, amount,
+  <span class="kw">CASE</span>
+    <span class="kw">WHEN</span> amount >= <span class="num">10000</span>              <span class="kw">THEN</span> <span class="str">'ENTERPRISE'</span>
+    <span class="kw">WHEN</span> amount >= <span class="num">1000</span>               <span class="kw">THEN</span> <span class="str">'BUSINESS'</span>
+    <span class="kw">WHEN</span> amount >= <span class="num">100</span>                <span class="kw">THEN</span> <span class="str">'STANDARD'</span>
+    <span class="kw">WHEN</span> amount > <span class="num">0</span>                   <span class="kw">THEN</span> <span class="str">'MICRO'</span>
+    <span class="kw">ELSE</span>                               <span class="str">'INVALID'</span>
+  <span class="kw">END</span> <span class="kw">AS</span> deal_tier,
+  <span class="cm">-- Simple CASE: equality match</span>
+  <span class="kw">CASE</span> status
+    <span class="kw">WHEN</span> <span class="str">'C'</span> <span class="kw">THEN</span> <span class="str">'COMPLETED'</span>
+    <span class="kw">WHEN</span> <span class="str">'P'</span> <span class="kw">THEN</span> <span class="str">'PENDING'</span>
+    <span class="kw">WHEN</span> <span class="str">'X'</span> <span class="kw">THEN</span> <span class="str">'CANCELLED'</span>
+    <span class="kw">ELSE</span> status
+  <span class="kw">END</span> <span class="kw">AS</span> status_label
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">IFF</div><div class="fn-sig">IFF(condition, true_val, false_val)</div><div class="fn-tag ft-cond">Conditional</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Inline ternary conditional — shorthand for simple CASE WHEN. Returns true_val if condition is TRUE, false_val otherwise. NULL condition returns NULL. More readable for single-condition cases.</div>
+<pre><span class="cm">-- Clean boolean flags and simple conditions</span>
+<span class="kw">SELECT</span>
+  order_id,
+  <span class="fn2">IFF</span>(is_express_shipping, <span class="str">'EXPRESS'</span>, <span class="str">'STANDARD'</span>) <span class="kw">AS</span> shipping_type,
+  <span class="fn2">IFF</span>(amount > <span class="num">1000</span>, amount * <span class="num">0.05</span>, <span class="num">0</span>)          <span class="kw">AS</span> loyalty_bonus,
+  <span class="fn2">IFF</span>(returned_at <span class="kw">IS NOT NULL</span>, <span class="str">'RETURNED'</span>, <span class="str">'KEPT'</span>) <span class="kw">AS</span> return_status
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">DECODE</div><div class="fn-sig">DECODE(expr, val1, result1, val2, result2, ..., [default])</div><div class="fn-tag ft-cond">Conditional</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Oracle-style lookup table in a function. Treats NULL as equal (unlike =). Equivalent to simple CASE WHEN. Less verbose for many equality mappings.</div>
+<pre><span class="cm">-- Status code lookup</span>
+<span class="kw">SELECT</span>
+  status_code,
+  <span class="fn2">DECODE</span>(status_code,
+    <span class="str">'A'</span>, <span class="str">'Active'</span>,
+    <span class="str">'I'</span>, <span class="str">'Inactive'</span>,
+    <span class="str">'S'</span>, <span class="str">'Suspended'</span>,
+    <span class="kw">NULL</span>, <span class="str">'Unknown'</span>,  <span class="cm">-- DECODE treats NULL = NULL (unlike =)</span>
+    <span class="str">'Other'</span>            <span class="cm">-- default</span>
+  ) <span class="kw">AS</span> status_label
+<span class="kw">FROM</span> silver.accounts;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">GREATEST / LEAST</div><div class="fn-sig">GREATEST(val1, val2, ...) | LEAST(val1, val2, ...)</div><div class="fn-tag ft-cond">Conditional</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Returns the maximum/minimum from a list of values. Unlike MAX/MIN aggregates (across rows), these work across columns in the same row. NULL-safe: any NULL argument returns NULL — use COALESCE.</div>
+<pre><span class="cm">-- Price floor/ceiling logic</span>
+<span class="kw">SELECT</span>
+  product_id,
+  <span class="fn2">GREATEST</span>(cost_price, minimum_price, <span class="num">0</span>)       <span class="kw">AS</span> effective_floor_price,
+  <span class="fn2">LEAST</span>(list_price, competitor_price, promo_price) <span class="kw">AS</span> best_offered_price,
+  <span class="cm">-- NULL-safe: use COALESCE on inputs</span>
+  <span class="fn2">GREATEST</span>(<span class="fn2">COALESCE</span>(score_a, <span class="num">0</span>), <span class="fn2">COALESCE</span>(score_b, <span class="num">0</span>)) <span class="kw">AS</span> best_score
+<span class="kw">FROM</span> silver.pricing;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">IN / NOT IN / EXISTS</div><div class="fn-sig">col IN (val1, val2, ...) | col IN (subquery)</div><div class="fn-tag ft-cond">Conditional</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Membership test. <strong>IN</strong> is shorthand for multiple OR conditions. <strong>NOT IN with NULLs is dangerous</strong> — if the list contains NULL, NOT IN always returns NULL (false). Use NOT EXISTS or IS NOT NULL filter.</div>
+<pre><span class="cm">-- Filter by allowed status values</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> silver.orders
+<span class="kw">WHERE</span> status <span class="kw">IN</span> (<span class="str">'COMPLETED'</span>, <span class="str">'SHIPPED'</span>, <span class="str">'PROCESSING'</span>);
+
+<span class="cm">-- SAFE: NOT IN with potential NULLs — filter first</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> customer_id <span class="kw">NOT IN</span> (
+  <span class="kw">SELECT</span> customer_id <span class="kw">FROM</span> blacklist <span class="kw">WHERE</span> customer_id <span class="kw">IS NOT NULL</span>  <span class="cm">-- critical!</span>
+);</pre>
+  <div class="info-box warn"><div class="lb">NULL Trap</div><code>5 NOT IN (1, 2, NULL)</code> returns NULL, not TRUE. Any NULL in the list makes NOT IN unpredictable. Always use <code>WHERE customer_id IS NOT NULL</code> in the subquery.</div>
+</div></div>
+
+</div>
+</div>
+
+<!-- TYPE CAST -->
+<div id="sec-cast" class="section">
+<div class="sec-title">🔄 Type & Cast Functions<span class="fn-count">4 functions</span></div>
+<div class="sec-desc">Safe type coercion from Bronze raw strings to typed Silver columns.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">CAST</div><div class="fn-sig">CAST(expr AS type) | expr::type</div><div class="fn-tag ft-cast">Cast</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Explicit type conversion. The <code>::</code> shorthand is equivalent. Throws error if cast fails. Use TRY_CAST for safe casting. Common target types: INT, BIGINT, DOUBLE, DECIMAL(18,2), STRING, BOOLEAN, DATE, TIMESTAMP.</div>
+<pre><span class="cm">-- Bronze → Silver type standardization</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">CAST</span>(raw_id <span class="kw">AS</span> BIGINT)                      <span class="kw">AS</span> order_id,
+  <span class="fn2">CAST</span>(raw_amount <span class="kw">AS</span> DECIMAL(<span class="num">18</span>, <span class="num">2</span>))          <span class="kw">AS</span> amount,
+  raw_amount::DOUBLE                            <span class="kw">AS</span> amount_double,  <span class="cm">-- shorthand</span>
+  <span class="fn2">CAST</span>(raw_date <span class="kw">AS</span> DATE)                       <span class="kw">AS</span> order_date,
+  <span class="fn2">CAST</span>(is_active_flag <span class="kw">AS</span> BOOLEAN)             <span class="kw">AS</span> is_active,
+  <span class="fn2">CAST</span>(score * <span class="num">100</span> <span class="kw">AS</span> INT)                   <span class="kw">AS</span> score_pct
+<span class="kw">FROM</span> bronze.raw_orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TRY_CAST</div><div class="fn-sig">TRY_CAST(expr AS type)</div><div class="fn-tag ft-cast">Cast</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Safe version of CAST — returns NULL instead of throwing an error on invalid conversion. Essential for Bronze ingestion where source data is unreliable. Combine with IS NULL check for DQ validation.</div>
+<pre><span class="cm">-- Safe casting in Bronze → Silver (won't fail on bad data)</span>
+<span class="kw">SELECT</span>
+  raw_id,
+  <span class="fn2">TRY_CAST</span>(raw_amount <span class="kw">AS</span> DECIMAL(<span class="num">18</span>, <span class="num">2</span>))  <span class="kw">AS</span> amount,          <span class="cm">-- NULL if 'abc'</span>
+  <span class="fn2">TRY_CAST</span>(raw_date <span class="kw">AS</span> DATE)              <span class="kw">AS</span> order_date,       <span class="cm">-- NULL if bad date</span>
+  <span class="fn2">TRY_CAST</span>(raw_amount <span class="kw">AS</span> DECIMAL(<span class="num">18</span>,<span class="num">2</span>)) <span class="kw">IS NULL AS</span> bad_amount  <span class="cm">-- DQ flag</span>
+<span class="kw">FROM</span> bronze.raw_orders;
+
+<span class="cm">-- DQ: count casting failures</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">COUNT_IF</span>(<span class="fn2">TRY_CAST</span>(raw_amount <span class="kw">AS</span> DECIMAL(<span class="num">18</span>,<span class="num">2</span>)) <span class="kw">IS NULL</span>) <span class="kw">AS</span> bad_amount_count
+<span class="kw">FROM</span> bronze.raw_orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TRY_DIVIDE</div><div class="fn-sig">TRY_DIVIDE(dividend, divisor)</div><div class="fn-tag ft-cast">Safe Math</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Divides two numbers, returning NULL instead of error on division by zero. Cleaner than <code>dividend / NULLIF(divisor, 0)</code>. Available in Databricks SQL natively.</div>
+<pre><span class="cm">-- Safe rate calculations</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">TRY_DIVIDE</span>(revenue, units_sold)          <span class="kw">AS</span> revenue_per_unit,   <span class="cm">-- NULL if 0 units</span>
+  <span class="fn2">TRY_DIVIDE</span>(clicks, impressions) * <span class="num">100</span>   <span class="kw">AS</span> ctr_pct,
+  <span class="fn2">TRY_DIVIDE</span>(conversions, sessions) * <span class="num">100</span> <span class="kw">AS</span> conversion_rate_pct
+<span class="kw">FROM</span> gold.campaign_metrics;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TYPEOF</div><div class="fn-sig">TYPEOF(expr) → string</div><div class="fn-tag ft-cast">Cast</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Returns the data type of an expression as a string. Useful for debugging schema issues in semi-structured data and verifying CAST results in exploratory notebooks.</div>
+<pre><span class="cm">-- Debug column types</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">TYPEOF</span>(<span class="num">42</span>),           <span class="cm">-- 'int'</span>
+  <span class="fn2">TYPEOF</span>(<span class="num">42.0</span>),         <span class="cm">-- 'double'</span>
+  <span class="fn2">TYPEOF</span>(<span class="str">'hello'</span>),     <span class="cm">-- 'string'</span>
+  <span class="fn2">TYPEOF</span>(CURRENT_DATE); <span class="cm">-- 'date'</span>
+
+<span class="cm">-- Diagnose schema drift in semi-structured Bronze column</span>
+<span class="kw">SELECT</span> <span class="fn2">DISTINCT</span> <span class="fn2">TYPEOF</span>(parsed_payload.amount) <span class="kw">AS</span> amount_type
+<span class="kw">FROM</span> bronze.events;  <span class="cm">-- should only be 'double', not 'string'</span></pre>
+</div></div>
+
+</div>
+</div>
+
+<!-- JSON -->
+<div id="sec-json" class="section">
+<div class="sec-title">{ } JSON Functions<span class="fn-count">5 functions</span></div>
+<div class="sec-desc">Parse and transform JSON payloads from Event Hubs, Kafka, and REST APIs in your Bronze layer.</div>
+<div class="fn-grid">
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">GET_JSON_OBJECT</div><div class="fn-sig">GET_JSON_OBJECT(json_str, '$.path')</div><div class="fn-tag ft-str">JSON</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Extract a single value from a JSON string using JSONPath. Returns NULL if path doesn't exist. Best for ad-hoc extraction of a few fields. For multiple fields, FROM_JSON is more efficient.</div>
+<pre><span class="cm">-- Extract fields from Event Hubs JSON payload</span>
+<span class="kw">SELECT</span>
+  message_id,
+  <span class="fn2">GET_JSON_OBJECT</span>(body, <span class="str">'$.user_id'</span>)            <span class="kw">AS</span> user_id,
+  <span class="fn2">GET_JSON_OBJECT</span>(body, <span class="str">'$.event.type'</span>)          <span class="kw">AS</span> event_type,
+  <span class="fn2">GET_JSON_OBJECT</span>(body, <span class="str">'$.metadata.source'</span>)     <span class="kw">AS</span> source,
+  <span class="fn2">GET_JSON_OBJECT</span>(body, <span class="str">'$.items[0].product_id'</span>) <span class="kw">AS</span> first_product  <span class="cm">-- array index</span>
+<span class="kw">FROM</span> bronze.event_hub_raw;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">FROM_JSON</div><div class="fn-sig">FROM_JSON(json_str, schema)</div><div class="fn-tag ft-str">JSON</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Parse a JSON string into a strongly-typed struct using a schema definition. Far more efficient than multiple GET_JSON_OBJECT calls. Schema can be defined inline or via SCHEMA_OF_JSON.</div>
+<pre><span class="cm">-- Parse full Event Hubs payload with schema</span>
+<span class="kw">SELECT</span>
+  message_id,
+  <span class="fn2">FROM_JSON</span>(body,
+    <span class="str">'STRUCT&lt;
+      user_id:BIGINT,
+      event_type:STRING,
+      amount:DECIMAL(18,2),
+      event_ts:TIMESTAMP,
+      metadata:STRUCT&lt;source:STRING, version:INT&gt;,
+      items:ARRAY&lt;STRUCT&lt;product_id:STRING, qty:INT&gt;&gt;
+    &gt;'</span>
+  ) <span class="kw">AS</span> payload
+<span class="kw">FROM</span> bronze.event_hub_raw;
+
+<span class="cm">-- Access parsed fields</span>
+<span class="kw">SELECT</span>
+  message_id,
+  payload.user_id,
+  payload.event_type,
+  payload.metadata.source,
+  payload.items[<span class="num">0</span>].product_id
+<span class="kw">FROM</span> (above query);</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">TO_JSON</div><div class="fn-sig">TO_JSON(struct_col | map_col | array_col)</div><div class="fn-tag ft-str">JSON</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Serialize a struct, map, or array column to a JSON string. Useful for writing back to Kafka/Event Hubs, building audit payloads, or storing complex types as strings.</div>
+<pre><span class="cm">-- Serialize struct back to JSON for output</span>
+<span class="kw">SELECT</span>
+  order_id,
+  <span class="fn2">TO_JSON</span>(STRUCT(customer_id, order_date, amount, status)) <span class="kw">AS</span> order_json,
+  <span class="fn2">TO_JSON</span>(line_items)                                      <span class="kw">AS</span> items_json,
+  <span class="fn2">TO_JSON</span>(<span class="fn2">MAP</span>(<span class="str">'id'</span>, order_id::STRING, <span class="str">'status'</span>, status))  <span class="kw">AS</span> status_json
+<span class="kw">FROM</span> silver.orders;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">SCHEMA_OF_JSON</div><div class="fn-sig">SCHEMA_OF_JSON(json_str_sample)</div><div class="fn-tag ft-str">JSON</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Infer the schema (DDL string) of a JSON string sample. Perfect for quickly generating FROM_JSON schemas from real payload examples without manually writing the struct definition.</div>
+<pre><span class="cm">-- Auto-detect schema from a sample record</span>
+<span class="kw">SELECT</span> <span class="fn2">SCHEMA_OF_JSON</span>(<span class="str">'{"user_id":123,"amount":45.99,"tags":["a","b"],"ts":"2024-06-15T10:00:00"}'</span>);
+<span class="cm">-- Returns: STRUCT&lt;user_id:BIGINT,amount:DOUBLE,tags:ARRAY&lt;STRING&gt;,ts:STRING&gt;</span>
+
+<span class="cm">-- Use in FROM_JSON</span>
+<span class="kw">SELECT</span> <span class="fn2">FROM_JSON</span>(payload, <span class="fn2">SCHEMA_OF_JSON</span>(<span class="fn2">SELECT</span> payload <span class="fn2">FROM</span> bronze.events <span class="fn2">LIMIT</span> <span class="num">1</span>)) <span class="kw">AS</span> parsed
+<span class="kw">FROM</span> bronze.events;</pre>
+</div></div>
+
+<div class="fn-card"><div class="fn-header" onclick="toggleFn(this)">
+  <div><div class="fn-name">JSON_TUPLE</div><div class="fn-sig">JSON_TUPLE(json_str, key1, key2, ...) → multiple columns</div><div class="fn-tag ft-str">JSON</div></div><span class="fn-arrow">▼</span>
+</div><div class="fn-body">
+  <div class="fn-desc">Extract multiple top-level JSON keys into separate columns in a single lateral view. More concise than multiple GET_JSON_OBJECT calls for flat JSON structures.</div>
+<pre><span class="cm">-- Extract multiple fields in one call (flat JSON only)</span>
+<span class="kw">SELECT</span> t.user_id, t.event_type, t.amount
+<span class="kw">FROM</span> bronze.events
+<span class="kw">LATERAL VIEW</span> <span class="fn2">JSON_TUPLE</span>(body, <span class="str">'user_id'</span>, <span class="str">'event_type'</span>, <span class="str">'amount'</span>) t
+  <span class="kw">AS</span> user_id, event_type, amount;
+<span class="cm">-- Note: all returned as STRING — CAST as needed</span></pre>
+  <div class="info-box tip"><div class="lb">When to use which</div>1 field → <code>GET_JSON_OBJECT</code>. 2–5 top-level fields → <code>JSON_TUPLE</code>. Many fields or nested → <code>FROM_JSON</code> with schema (fastest). Unknown schema → <code>SCHEMA_OF_JSON</code> first.</div>
+</div></div>
+
+</div>
+</div>
+
+<!-- CHEAT SHEET -->
+<div id="sec-cheat" class="section">
+<div class="sec-title">📋 Quick Reference Cheat Sheet</div>
+<div class="sec-desc">All functions at a glance — copy-paste ready patterns.</div>
+<h3>Null Handling</h3>
+<table>
+  <tr><th>Function</th><th>Use Case</th><th>Example</th></tr>
+  <tr><td><code>IFNULL(col, 0)</code></td><td>Replace NULL with default</td><td><code>IFNULL(discount, 0)</code></td></tr>
+  <tr><td><code>NVL(col, 'N/A')</code></td><td>Same as IFNULL (Oracle style)</td><td><code>NVL(email, 'no-email')</code></td></tr>
+  <tr><td><code>NVL2(col, 'Y', 'N')</code></td><td>Different value for null vs not-null</td><td><code>NVL2(cancelled_at, 'CANCELLED', 'ACTIVE')</code></td></tr>
+  <tr><td><code>COALESCE(a, b, c)</code></td><td>First non-null from list</td><td><code>COALESCE(billing, shipping, 'unknown')</code></td></tr>
+  <tr><td><code>NULLIF(col, 0)</code></td><td>Convert value to NULL</td><td><code>revenue / NULLIF(units, 0)</code></td></tr>
+</table>
+<h3>Date & Time</h3>
+<table>
+  <tr><th>Function</th><th>Use Case</th><th>Example</th></tr>
+  <tr><td><code>DATE_PART('year', ts)</code></td><td>Extract component</td><td><code>DATE_PART('month', order_date)</code></td></tr>
+  <tr><td><code>DATE_TRUNC('month', ts)</code></td><td>Round down to period</td><td><code>DATE_TRUNC('week', event_ts)</code></td></tr>
+  <tr><td><code>DATEDIFF(end, start)</code></td><td>Days between dates</td><td><code>DATEDIFF(delivered, promised)</code></td></tr>
+  <tr><td><code>DATE_ADD(date, n)</code></td><td>Add N days</td><td><code>DATE_ADD(order_date, 30)</code></td></tr>
+  <tr><td><code>TO_DATE(str, fmt)</code></td><td>Parse string to date</td><td><code>TO_DATE('20240615', 'yyyyMMdd')</code></td></tr>
+  <tr><td><code>DATE_FORMAT(ts, fmt)</code></td><td>Format date to string</td><td><code>DATE_FORMAT(ts, 'yyyy-MM')</code></td></tr>
+</table>
+<h3>Window Functions</h3>
+<table>
+  <tr><th>Function</th><th>Use Case</th><th>Pattern</th></tr>
+  <tr><td><code>ROW_NUMBER()</code></td><td>Deduplication, ranking</td><td><code>ROW_NUMBER() OVER (PARTITION BY id ORDER BY ts DESC)</code></td></tr>
+  <tr><td><code>RANK()</code></td><td>Ranking with gaps</td><td><code>RANK() OVER (PARTITION BY cat ORDER BY rev DESC)</code></td></tr>
+  <tr><td><code>DENSE_RANK()</code></td><td>Ranking without gaps</td><td><code>DENSE_RANK() OVER (ORDER BY score DESC)</code></td></tr>
+  <tr><td><code>LAG(col, 1)</code></td><td>Previous row value</td><td><code>LAG(revenue) OVER (ORDER BY month)</code></td></tr>
+  <tr><td><code>LEAD(col, 1)</code></td><td>Next row value</td><td><code>LEAD(status) OVER (PARTITION BY id ORDER BY ts)</code></td></tr>
+  <tr><td><code>SUM() OVER (...)</code></td><td>Running total</td><td><code>SUM(amount) OVER (ORDER BY date)</code></td></tr>
+</table>
+<h3>Common Pipeline Patterns</h3>
+<pre><span class="cm">-- Pattern 1: Bronze → Silver type casting (safe)</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">TRY_CAST</span>(raw_id <span class="kw">AS</span> BIGINT)             <span class="kw">AS</span> order_id,
+  <span class="fn2">COALESCE</span>(<span class="fn2">TRY_CAST</span>(raw_amount <span class="kw">AS</span> DECIMAL(<span class="num">18</span>,<span class="num">2</span>)), <span class="num">0</span>) <span class="kw">AS</span> amount,
+  <span class="fn2">TRIM</span>(<span class="fn2">UPPER</span>(<span class="fn2">COALESCE</span>(country_code, <span class="str">'UNKNOWN'</span>)))   <span class="kw">AS</span> country,
+  <span class="fn2">TRY_TO_DATE</span>(raw_date, <span class="str">'yyyy-MM-dd'</span>)   <span class="kw">AS</span> order_date,
+  CURRENT_TIMESTAMP                       <span class="kw">AS</span> load_ts
+<span class="kw">FROM</span> bronze.raw_orders;
+
+<span class="cm">-- Pattern 2: Deduplication with ROW_NUMBER</span>
+<span class="kw">WITH</span> deduped <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> *, <span class="fn2">ROW_NUMBER</span>() <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> business_key <span class="kw">ORDER BY</span> updated_at <span class="kw">DESC</span>) rn
+  <span class="kw">FROM</span> bronze.source_table
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> deduped <span class="kw">WHERE</span> rn = <span class="num">1</span>;
+
+<span class="cm">-- Pattern 3: DQ check in single pass</span>
+<span class="kw">SELECT</span>
+  <span class="fn2">COUNT</span>(*) total,
+  <span class="fn2">COUNT_IF</span>(id <span class="kw">IS NULL</span>) null_id,
+  <span class="fn2">COUNT_IF</span>(amount <= <span class="num">0</span>) bad_amount,
+  <span class="fn2">COUNT_IF</span>(<span class="fn2">TRY_CAST</span>(raw_date <span class="kw">AS</span> DATE) <span class="kw">IS NULL</span>) bad_dates,
+  <span class="fn2">APPROX_COUNT_DISTINCT</span>(id) approx_unique_ids
+<span class="kw">FROM</span> bronze.raw_orders;
+
+<span class="cm">-- Pattern 4: SCD Type 2 trigger detection</span>
+<span class="kw">SELECT</span> *, city != <span class="fn2">LAG</span>(city) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> updated_at) <span class="kw">AS</span> changed
+<span class="kw">FROM</span> silver.customers;</pre>
+</div>
+
+</div><!-- content -->
+</div><!-- main -->
+
+<script>
+const secTitles={home:'Home',null:'Null Handling',str:'String Functions',date:'Date & Time',agg:'Aggregate Functions',win:'Window Functions',arr:'Array & Map',cond:'Conditional',cast:'Type & Cast',json:'JSON Functions',cheat:'Quick Reference'};
+
+function showSec(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
+  document.getElementById('topTitle').textContent=secTitles[id]||id;
+  window.scrollTo(0,0);
+}
+
+function toggleFn(header){
+  const body=header.nextElementSibling;
+  const arrow=header.querySelector('.fn-arrow');
+  if(body.classList.contains('open')){
+    body.classList.remove('open');header.classList.remove('open');arrow.textContent='▼';
+  } else {
+    body.classList.add('open');header.classList.add('open');arrow.textContent='▲';
+  }
+}
+
+function filterFns(val){
+  document.querySelectorAll('.nav-item').forEach(item=>{
+    const s=item.getAttribute('data-s')||'';
+    item.style.display=(!val||s.includes(val.toLowerCase()))?'':'none';
+  });
+}
+</script>
+</body>
+</html>
